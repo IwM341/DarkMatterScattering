@@ -1,0 +1,9 @@
+D:\Soft\Prog\Qt\Tools\mingw810_64\bin\gcc 
+D:\Soft\Prog\Qt\Tools\mingw810_64\bin\g++ 
+
+-LPATH_TO_LIB
+
+-Wl,-Bstatic -lgomp
+
+-static -static-libgcc
+
