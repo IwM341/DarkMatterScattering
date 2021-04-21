@@ -7,3 +7,6 @@ D:\Soft\Prog\Qt\Tools\mingw810_64\bin\g++
 
 -static -static-libgcc
 
+-o out.exe
+-c -o out.o
+

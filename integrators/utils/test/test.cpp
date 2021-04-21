@@ -1,18 +1,22 @@
 #include <cstdio>
 #include <iostream>
-#include "../integrators/lambda_int.hpp"
-#include "../phase4.hpp"
-#include "../sections/cross_section3.hpp"
+#include "integrator.hpp"
+#include "phase4.hpp"
+#include "cross_section3.hpp"
 
 #include <fstream>
 #include <string>
 
 #include <time.h>
+
 #define a1 1
 #define b1 0
 #define a2 1
 #define b2 0
 
+double delta(double x,double sigma){
+	return exp(-x*x/(2*sigma*sigma))/sqrt(2*M_PI*sigma*sigma);
+}
 double M2phi(PhaseState3 out, PhaseState2 in){
 	
 	double p1q = out.P1*out.Q;
@@ -24,11 +28,12 @@ double M2phi(PhaseState3 out, PhaseState2 in){
 	
 	double dM2ee = 0;//(a1*a1+b1*b1)*(in.P0-out.P1)*out.Q;
 	
-	double qcoeff = -(out.P1/p1q - in.P0/pq).quad();
+
+	double qcoeff = 1;//-(out.P1/p1q - in.P0/pq).quad();
 	
 	double part3 =  0;//(a1*a1+b1*b1)*2*(pq-p1q)*(1/p1q-1/pq);
 	
-	return M2hi*(qcoeff*(M2ee+dM2ee)+part3);
+	return 1;//M2hi*(qcoeff*(M2ee+dM2ee)+part3);
 }
 
 template <typename Functor2>
@@ -55,15 +60,36 @@ void save_function2(Functor2 F,double x0,double x1,double y0,double y1,int Nx,in
 	}
 }
 
+const double pbarn_to_GeV = 2.56818998849288e-09;
+const double GeV_to_pbarn = 1/2.56818998849288e-09;
+
 int main(void){
 	double mk = 1;
 	double mp = 0.1;
 	double k0 = 0.1;
 	MatrixElementType M2 = M2phi;//[](PhaseState3,PhaseState2){return 1;};
-	auto F1 = dsigma_dk1_dcosTh(mk,mp,k0,M2,20,20);
+	auto F1 = dsigma_dk1_dcosTh(mk,mp,k0,M2,10,10);
 	
-	save_function2(F1,0,k0,-1,1,20,20,"sigmas1gg.dat","k'","cos(theta)");
+	//save_function2(F1,0,k0,-1,1,20,20,"sigmas1gg.dat","k'","cos(theta)");
 	
+	double cosTh = 0.5;
+	//double k1 = 0.5*k0;
+	double Ecm = E(mk,k0)+E(mp,k0);
+	//double E1 = E(mk,k1);
+	double E0 = E(mk,k0);
+	
+	std::cout << integrateAB([E0,k0,Ecm,cosTh,F1](double k1){
+			return F1(k1,cosTh)*2*4*k0*Ecm;
+		},0,k0,100) << std::endl;
+	
+	std::cout << integrateAB([E0,k0,Ecm,cosTh,F1,mk](double k1){
+			double E1 = E(mk,k1);
+			return k1*k1*Ecm*(E0-E1)/(2*E1*phase_2pi3*((Ecm-E1)*(Ecm-E1) - k1*k1));
+		},0,k0,100)*GeV_to_pbarn << std::endl;
+	
+	//std::cout <<"dsigma/domega = " << F1(k1,cosTh)*2*4*k0*Ecm << std::endl;
+	//std::cout << k1*k1*Ecm*(E0-E1)/(2*E1*phase_2pi3*((Ecm-E1)*(Ecm-E1) - k1*k1)) << std::endl;
+	//std::cout << F1(k1,cosTh)*2*4*k0*Ecm -  k1*k1*Ecm*(E0-E1)/(2*E1*phase_2pi3*((Ecm-E1)*(Ecm-E1) - k1*k1))  << std::endl;
 	
 }
 

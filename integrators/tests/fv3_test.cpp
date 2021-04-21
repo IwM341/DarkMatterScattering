@@ -52,7 +52,7 @@ public:
 	}
 	virtual double AreaVolume() const{return 8*Ecm*Ecm*Ecm*Ecm*4*M_PI;}
 	double density(Volume3 V) const{
-		return pow(1.0/(2*M_PI),5)*V.Q.t/(8*V.K.t*V.P.t)*delta(V.K.t+V.P.t+V.Q.t-Ecm,Ecm/30);
+		return pow(1.0/(2*M_PI),5)*V.Q.t/(8*V.K.t*V.P.t)*delta(V.K.t+V.P.t+V.Q.t-Ecm,Ecm/500);
 	}
 };
 
@@ -78,12 +78,12 @@ int main(void){
 	std::cout << "true = " << 
 		integrateAB([Ek0,mk,Ecm](double k){
 			return kdensity(k,Ecm,Ek0,mk);
-		},0,k0.norm(),100) << std::endl;
+		},0,k0.norm(),200) << std::endl;
 
 	
 	MonteCarloIntegrator I;
 	v3_gen gen(Ecm,mp,mk);
-	std::cout<< I((ftype)[gen](Volume3 V)->double{return gen.density(V);},&gen,10000000) << std::endl;
+	std::cout<< I((ftype)[gen](Volume3 V)->double{return gen.density(V);},&gen,100000000) << std::endl;
 	
 	return 0;
 }
