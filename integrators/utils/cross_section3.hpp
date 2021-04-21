@@ -122,6 +122,11 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh(double mk,double mp,doubl
 						}
 						
 						double q_part = Ecm - Ek1 + k1*cosTh1;
+						
+						double deltaE = 0.5*(k0-k1)*(k0+k1)/(Ek0+Ek1)
+						
+						std::cout<<deltaE<<" vs " << Ek0-Ek1 <<std::endl;
+						
 						double phase_density = 
 								( k1*k1*Ecm*(Ek0-Ek1))*sinTh1/(8*q_part*q_part*phase_2pi4*Ek1);
 						double factor_p1p2 = 1/(4*k0*Ecm);
