@@ -1,0 +1,6 @@
+elements	element_1_name	element_2_name	element_3_name
+
+R	element_1_n	element_2_n	element_3_n
+0	10	10	10
+0.1	3	3	3
+0.2	1	1	1
