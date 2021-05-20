@@ -9,11 +9,11 @@
 #include <functional>
 
 
-const double phase_2pi1 = 6.2831853071795864770; 
-const double phase_2pi2 = 39.478417604357434476; 
-const double phase_2pi3 = 248.05021344239856142; 
-const double phase_2pi4 = 1558.5454565440389959; 
-const double phase_2pi5 = 9792.6299131290065050; 
+#define  phase_2pi1   6.2831853071795864770
+#define  phase_2pi2   39.478417604357434476
+#define  phase_2pi3   248.05021344239856142
+#define  phase_2pi4   1558.5454565440389959
+#define  phase_2pi5   9792.6299131290065050
 
 inline double fase_volume_density(double k1,double Ecm,double Ek0,double Ek1,double cosTh1){
 	double q_part = Ecm - Ek1 - k1*cosTh1;
@@ -70,8 +70,8 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh(double mk,double mp,doubl
 	PhaseState2 St2(vec4(Ek0,0,0,k0),vec4(Ep0,0,0,-k0));
 	
 	return [mk,mp,k0,M2,Ek0,Ep0,Ecm,St2,Nphi,NTh1](double k1,double cosTh){
-		return integrateAB5([mk,mp,k0,M2,Ek0,Ep0,Ecm,St2,k1,cosTh,Nphi,NTh1](double Theta1){
-				return integrateAB5([mk,mp,k0,M2,Ek0,Ep0,Ecm,St2,k1,cosTh,Theta1,Nphi,NTh1](double phi1){
+		return integrateAB([mk,mp,k0,M2,Ek0,Ep0,Ecm,St2,k1,cosTh,Nphi,NTh1](double Theta1){
+				return integrateAB([mk,mp,k0,M2,Ek0,Ep0,Ecm,St2,k1,cosTh,Theta1,Nphi,NTh1](double phi1){
 						
 						
 						double cosTh1 = cos(Theta1);
@@ -79,6 +79,7 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh(double mk,double mp,doubl
 						
 						double Ek1 = E(mk,k1);
 						
+						double deltaE = (k0-k1)*(k0+k1)/(Ek0+Ek1);
 
 						PhaseState3 St3;
 						{
@@ -91,7 +92,7 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh(double mk,double mp,doubl
 							vec3 vk1 = k1*e3;
 							
 							
-							double q =  (Ecm*(Ek0-Ek1))/(Ecm- Ek1 + k1*cosTh1);
+							double q =  (Ecm*(deltaE))/(Ecm- Ek1 + k1*cosTh1);
 							
 							vec3 vq = q*(cosTh1*e3+sinTh1*sin(phi1)*e2+sinTh1*cos(phi1)*e1);
 							
@@ -115,20 +116,20 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh(double mk,double mp,doubl
 												St3.P1.quad() << ", " << 
 												St3.Q.quad() << std::endl;
 								std::cout <<(St3.K1+St3.Q+St3.P1) <<std::endl;
-								
+								std::cout <<log ((St3.K1+St3.Q+St3.P1-St2.K0 - St2.P0).t) <<std::endl;
 								std::cout <<"Ecm - K'-P'-Q"  << Ecm - (St3.K1+St3.Q+St3.P1).t << std::endl;
 								std::cout << std::endl;
-							}*/
+							}/**/
 						}
 						
 						double q_part = Ecm - Ek1 + k1*cosTh1;
 						
-						double deltaE = 0.5*(k0-k1)*(k0+k1)/(Ek0+Ek1)
+						
 						
 						//std::cout<<deltaE<<" vs " << Ek0-Ek1 <<std::endl;
 						
 						double phase_density = 
-								( k1*k1*Ecm*(Ek0-Ek1))*sinTh1/(8*q_part*q_part*phase_2pi4*Ek1);
+								( k1*k1*Ecm*(deltaE))*sinTh1/(8*q_part*q_part*phase_2pi4*Ek1);
 						double factor_p1p2 = 1/(4*k0*Ecm);
 						
 						if(q_part <0)
@@ -143,8 +144,8 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh(double mk,double mp,doubl
 }
 
 
-#define min(a,b) ( a < b ? a : b )
-#define max(a,b) ( a > b ? a : b )
+#define MIN(a,b) ( (a) < (b) ? (a) : (b) )
+#define MAX(a,b) ( (a) > (b) ? (a) : (b) )
 
 extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh_Q(double mk,double mp,double k0,double q_min,MatrixElementType M2,
 								double Nphi ,double  NTh1){ 
@@ -156,25 +157,26 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh_Q(double mk,double mp,dou
 	
 	const PhaseState2 St2(vec4(Ek0,0,0,k0),vec4(Ep0,0,0,-k0));
 	
-	const double k1p = ((1-q_min/Ecm)*sqrt(k0*k0+q_min+q_min+2*q_min*mk*mk/Ecm-2*mk*Ek0) 
+	const double k1p = ((1-q_min/Ecm)*sqrt(k0*k0+q_min*q_min+2*q_min*mk*mk/Ecm-2*q_min*Ek0) 
 							- q_min*(Ek0-q_min)/Ecm)/(1-2*q_min/Ecm);
 	
-	const double k1m = ((1-q_min/Ecm)*sqrt(k0*k0+q_min+q_min+2*q_min*mk*mk/Ecm-2*mk*Ek0) 
+	const double k1m = ((1-q_min/Ecm)*sqrt(k0*k0+q_min*q_min+2*q_min*mk*mk/Ecm-2*q_min*Ek0) 
 							+ q_min*(Ek0-q_min)/Ecm)/(1-2*q_min/Ecm);
+	
+	std::cout<<"k1m = " << k1m << ",k1p = " << k1p << std::endl;
+	std::cout<<"cos_m = " << ( (Ecm-q_min)*(k0*k0-k1m*k1m)/(Ek0+E(mk,k1m)) - q_min*Ep0)/(q_min*k1m) << std::endl;
+	std::cout<<"cos_p = " << ( (Ecm-q_min)*(k0*k0-k1p*k1p)/(Ek0+E(mk,k1p)) - q_min*Ep0)/(q_min*k1p) << std::endl;
 
-	std::cout<<"cos_max = " << ( (Ecm-q_min)*(k0*k0-k1m*k1m)/(Ek0+E(mk,k1m)) - q_min*Ep0)/(q_min*k1m) << std::endl;
-	std::cout<<"cos_min = " << ( (Ecm-q_min)*(k0*k0-k1m*k1p)/(Ek0+E(mk,k1p)) - q_min*Ep0)/(q_min*k1p) << std::endl;
-
-	return [mk,mp,k0,M2,Ek0,Ep0,Ecm,St2,Nphi,NTh1,k1p,k1m](double k1,double cosTh){
+	return [q_min,mk,mp,k0,M2,Ek0,Ep0,Ecm,St2,Nphi,NTh1,k1p,k1m](double k1,double cosTh){
 		
 		const double Ek1 = E(mk,k1);
 		const double cosTh1_max = ( (Ecm-q_min)*(k0*k0-k1*k1)/(Ek0+Ek1) - q_min*Ep0)/(q_min*k1);
 		
 		const double sinTh = sqrt(1-cosTh*cosTh);
 		
-		const double Theta1_max = acos(max(-1,min(1,cosTh1_max)));
+		const double Theta1_max = acos(MAX(-1,MIN(1,cosTh1_max)));
 		
-		std::cout <<"k1, cos = " k1 << "\t" << cosTh1_max << std::endl;
+		std::cout <<"k1, cos = " << k1 << "\t" << cosTh1_max << std::endl;
 		
 		const double factor_p1p2 = 1/(4*k0*Ecm);
 		
@@ -186,7 +188,7 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh_Q(double mk,double mp,dou
 		const double deltaE = (k0-k1)*(k0+k1)/(Ek0+Ek1);
 		std::cout<<deltaE<<" vs " << Ek0-Ek1 <<std::endl;
 				
-		return integrateAB5([mp,k0,M2,Ek0,Ecm,Ek1,deltaE,St2,k1,Nphi](double Theta1){
+		return integrateAB5([mp,k0,M2,vk1,Ek0,Ecm,Ek1,deltaE,St2,k1,Nphi,e1,e2,e3,factor_p1p2](double Theta1){
 				
 				const double cosTh1 = cos(Theta1);
 				const double sinTh1 = sin(Theta1);
@@ -197,12 +199,12 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh_Q(double mk,double mp,dou
 				if(q_part <0)
 							std::cout<< Ecm << ", " << Ek1 << ", k1 =" << k1 << std::endl;
 				
-				std::cout <<"q vs q: "<< q << "\t" << Ecm*(Ek0-Ek1))/(Ecm- Ek1 + k1*cosTh1);
+
 				
 				const double phase_density = 
-								( k1*k1*Ecm*(Ek0-Ek1))*sinTh1/(8*q_part*q_part*phase_2pi4*Ek1);
+								( k1*k1*Ecm*deltaE)*sinTh1/(8*q_part*q_part*phase_2pi4*Ek1);
 				
-				return integrateAB5([mp,M2,St2,Ek1,vk1,e1,e2,e3,sinTh1,cosTh1,q,factor_p1p2](double phi1){
+				return integrateAB5([mp,M2,St2,Ek1,vk1,e1,e2,e3,sinTh1,cosTh1,q,factor_p1p2,phase_density](double phi1){
 						
 						
 						const vec3 vq = q*(cosTh1*e3+sinTh1*sin(phi1)*e2+sinTh1*cos(phi1)*e1);

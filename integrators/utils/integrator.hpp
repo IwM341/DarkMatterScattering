@@ -4,7 +4,7 @@
 #include "omp.h"
 #include <functional>
 #include <utility>
-
+#include <cmath>
 
 
 						
@@ -63,7 +63,7 @@ extern inline double integrateLogAB5(std::function<double(double)> f,double a,do
 		sum5 = 0.0;
 		const double xi = a - eps + (L+eps)*pow(T,i+1);
 		const double xi1 = a - eps + (L+eps)*pow(T,i);
-		const double h = xi1 - xi
+		const double h = xi1 - xi;
 		for(int j = 0;j<5;j++)
 			sum5 += Wh[j]*f(xi + h*Xh[j]);
 		sum += sum5*h;
