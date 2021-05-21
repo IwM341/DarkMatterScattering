@@ -75,9 +75,22 @@ int main(void){
 	const double eps = delta*(E(mp,k0)+E(mk,k0))*(E(mk,k0)-mk)/(E(mk,k0)+E(mp,k0)-mk);
 	
 	
-	auto F1 = dsigma_dk1_dcosTh(mk,mp,k0/*,eps*/,M2,40,40);
+	auto F1 = dsigma_dk1_dcosTh_Q(mk,mp,k0,eps,M2,40,40);
 	
-	save_function2(F1,0,k0,-1,1,100,20,"mp1mk01_1.dat","k'","cos(theta)");
+	
+	const double Ek0 = E(mk,k0);
+	const double Ecm = Ek0 + E(mp,k0);
+	
+	const double k1p = ((1-eps/Ecm)*sqrt(k0*k0+eps*eps+2*eps*mk*mk/Ecm-2*eps*Ek0) 
+							- eps*(Ek0-eps)/Ecm)/(1-2*eps/Ecm);
+	
+	const double k1m = ((1-eps/Ecm)*sqrt(k0*k0+eps*eps+2*eps*mk*mk/Ecm-2*eps*Ek0) 
+							+ eps*(Ek0-eps)/Ecm)/(1-2*eps/Ecm);
+	
+	//std::cout << "km " << F1(k1m,0.5) << std::endl;
+	//std::cout << "kp " << F1(k1p,0.5) << std::endl;
+	
+	save_function2(F1,0,k0,-1,1,100,20,"testQ.dat","k'","cos(theta)");
 	
 	/*
 	double cosTh = 0.5;

@@ -176,7 +176,7 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh_Q(double mk,double mp,dou
 		
 		const double Theta1_max = acos(MAX(-1,MIN(1,cosTh1_max)));
 		
-		std::cout <<"k1, cos = " << k1 << "\t" << cosTh1_max << std::endl;
+		//std::cout <<"k1, cos = " << k1 << ", "<<cosTh<<"\t" << Theta1_max << std::endl;
 		
 		const double factor_p1p2 = 1/(4*k0*Ecm);
 		
@@ -186,7 +186,6 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh_Q(double mk,double mp,dou
 		const vec3 e2(0,1,0);	
 		const vec3 vk1 = k1*e3;	
 		const double deltaE = (k0-k1)*(k0+k1)/(Ek0+Ek1);
-		std::cout<<deltaE<<" vs " << Ek0-Ek1 <<std::endl;
 				
 		return integrateAB5([mp,k0,M2,vk1,Ek0,Ecm,Ek1,deltaE,St2,k1,Nphi,e1,e2,e3,factor_p1p2](double Theta1){
 				
@@ -197,7 +196,7 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh_Q(double mk,double mp,dou
 				const double q =  (Ecm*deltaE)/q_part;
 				
 				if(q_part <0)
-							std::cout<< Ecm << ", " << Ek1 << ", k1 =" << k1 << std::endl;
+					std::cout<< Ecm << ", " << Ek1 << ", k1 =" << k1 << std::endl;
 				
 
 				
@@ -206,11 +205,7 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh_Q(double mk,double mp,dou
 				
 				return integrateAB5([mp,M2,St2,Ek1,vk1,e1,e2,e3,sinTh1,cosTh1,q,factor_p1p2,phase_density](double phi1){
 						
-						
 						const vec3 vq = q*(cosTh1*e3+sinTh1*sin(phi1)*e2+sinTh1*cos(phi1)*e1);
-						
-						
-						
 
 						PhaseState3 St3( vec4(Ek1,vk1),vec4(-vk1-vq,mp),vec4(q,vq));
 						
@@ -237,7 +232,7 @@ extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh_Q(double mk,double mp,dou
 						return M2(St3,St2)*phase_density*factor_p1p2;
 						
 					},0,2*M_PI,Nphi);
-			},0,M_PI,NTh1);
+			},Theta1_max,M_PI,NTh1);
 		};
 	
 }
