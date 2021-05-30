@@ -68,16 +68,16 @@ int main(void){
 	double mk = 0.1;
 	double mp = 1;
 	double k0 = 0.1;
-	MatrixElementType M2 = M2phi;//[](PhaseState3,PhaseState2){return 1;};
+	MatrixElementType23 M2 = M2phi;//[](PhaseState3,PhaseState2){return 1;};
 	
 	const double delta = 0.05;
 	
 	const double eps = delta*(E(mp,k0)+E(mk,k0))*(E(mk,k0)-mk)/(E(mk,k0)+E(mp,k0)-mk);
 	
 	
-	auto F1 = dsigma_dk1_dcosTh(mk,mp,k0/*,eps*/,M2,40,40);
+	auto F1 = dsigma_dk1_dcosTh(mk,mp,k0/*,eps*/,M2,20,20);
 	
-	save_function2(F1,0,k0,-1,1,100,20,"mp1mk01_1.dat","k'","cos(theta)");
+	save_function2(F1,0,k0,-1,1,1000,20,"mp1mk01.dat","k'","cos(theta)");
 	
 	/*
 	double cosTh = 0.5;

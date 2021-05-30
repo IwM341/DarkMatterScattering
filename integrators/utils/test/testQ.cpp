@@ -90,7 +90,7 @@ int main(void){
 	//std::cout << "km " << F1(k1m,0.5) << std::endl;
 	//std::cout << "kp " << F1(k1p,0.5) << std::endl;
 	
-	save_function2(F1,0,k0,-1,1,100,20,"testQ.dat","k'","cos(theta)");
+	save_function2(F1,0,k0,-1,1,1000,20,"testQ.dat","k'","cos(theta)");
 	
 	/*
 	double cosTh = 0.5;

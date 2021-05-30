@@ -1,0 +1,3 @@
+D:\Soft\Prog\Qt\Tools\mingw810_64\bin\g++ test.cpp -I../ -Wl, -fopenmp -static -static-libgcc -o test.exe
+
+D:\Soft\Prog\Qt\Tools\mingw810_64\bin\g++ cross.cpp -I../ -static -static-libgcc -o cross.exe
