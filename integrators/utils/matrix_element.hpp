@@ -11,6 +11,13 @@
 
 const double e2 = (4*M_PI/137.036);
 
+extern inline double q_coeff(vec4 p1,vec4 p2,vec4 q){
+	vec4 dp = p2-p1;
+	double p1q = p1*q;
+	double p2q = p2*q;
+	return (( (dp*q)*p1 - dp*p1q )/(p1q*p2q) ).quad();
+}
+
 MatrixElementType22 ScalarElement(double mp,double mk,double a1 = 1,double a2 = 1,double b1 = 0,double b2 = 0){
 	
 	return [a1,a2,b1,b2,mp,mk](PhaseState2 out, PhaseState2 in){
@@ -32,7 +39,9 @@ MatrixElementType23 ScalarElementQ(double mp,double mk,double a1 = 1,double a2 =
 		
 		double dM2ee = (a1*a1+b1*b1)*(in.P0-out.P1)*out.Q;
 		double qcoeff = -(out.P1/p1q - in.P0/pq).quad();
-	
+		
+		std::cout<< qcoeff << " vs " << q_coeff(in.P0,out.P1,out.Q);
+		
 		double part3 =  (a1*a1+b1*b1)*(pq-p1q)*(1/p1q-1/pq);
 		
 		return M2hi*(qcoeff*(M2ee+dM2ee)+part3)*e2;

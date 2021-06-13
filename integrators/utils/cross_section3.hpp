@@ -523,7 +523,7 @@ extern inline double sigmaC(double mp,double mk,double v_ls,double v_esc,
 		const vec4 P0 = vec4(vec3(0,0,-k0),mp);
 		const vec4 K0 = vec4(vec3(0,0,k0),mk);
 		
-		double reg_sigma = integrateAB5([Ecm,P0,K0,M22,alpha,eps,mp,mk	,NTh,k0](double Th){
+		double reg_sigma = integrateAB5([Ecm,P0,K0,M22,alpha,delta,mp,mk	,NTh,k0](double Th){
 				
 				const vec4 P1 = vec4(vec3(-k0*sin(Th),0,-k0*cos(Th)),mp);
 				const vec4 K1 = vec4(vec3(k0*sin(Th),0,k0*cos(Th)),mk);
@@ -532,7 +532,7 @@ extern inline double sigmaC(double mp,double mk,double v_ls,double v_esc,
 				
 				double sc = P1*P0;
 				double x = k0*sqrt((1.0-cos(Th))*(sc+mp*mp))/sc;
-				double factor = 1.+alpha/M_PI*log(eps/mp)*W(x);
+				double factor = 1.+alpha/M_PI*log(delta)*W(x);
 				
 				return factor*M2/(32*M_PI*Ecm*Ecm)*sin(Th);
 			}, Th_cr,M_PI,NTh);  
