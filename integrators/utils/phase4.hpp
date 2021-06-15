@@ -21,10 +21,10 @@ public:
 		return vec3(r*cos(phi)*sinTheta,r*sin(phi)*sinTheta,r*cosTheta);
 	}
 	
-	inline vec3 operator +(const vec3 second) const{
+	inline vec3 operator +(const vec3 &second) const{
 		return vec3(x+second.x,y+second.y,z+second.z);
 	}
-	inline vec3 operator -(const vec3 second) const{
+	inline vec3 operator -(const vec3 &second) const{
 		return vec3(x-second.x,y-second.y,z-second.z);
 	}
 	
@@ -58,7 +58,7 @@ public:
 		return *this;
 	}
 	
-	inline double operator*(vec3 second) const{
+	inline double operator*(const vec3 &second) const{
 		return x*second.x+y*second.y+z*second.z;
 	}
 	
@@ -79,7 +79,7 @@ public:
 
 };
 
-vec3 inline operator *(double a,const vec3 P){
+vec3 inline operator *(double a,const vec3 &P){
 	return P*a; 
 }
 
@@ -91,9 +91,9 @@ class vec4{
 	inline vec4():t(0),x(0),y(0),z(0){}
 	inline vec4(double t,double x,double y,double z):
 		t(t),x(x),y(y),z(z) {}
-	inline vec4(double t,vec3 X): t(t),x(X.x),y(X.y),z(X.z){}
+	inline vec4(double t,const vec3 &X): t(t),x(X.x),y(X.y),z(X.z){}
 	
-	inline vec4(vec3 X,double mass):
+	inline vec4(const vec3 &X,double mass):
 		t(sqrt(mass*mass + X*X)),x(X.x),y(X.y),z(X.z){}
 	
 	inline vec3 vecPart() const{
@@ -101,10 +101,10 @@ class vec4{
 	}
 	
 	
-	inline vec4 operator +(const vec4 second) const{
+	inline vec4 operator +(const vec4 &second) const{
 		return vec4(t+second.t,x+second.x,y+second.y,z+second.z);
 	}
-	inline vec4 operator -(const vec4 second) const{
+	inline vec4 operator -(const vec4 &second) const{
 		return vec4(t-second.t,x-second.x,y-second.y,z-second.z);
 	}
 	
@@ -112,10 +112,10 @@ class vec4{
 		return vec4(-t,-x,-y,-z);
 	}
 	
-	inline vec4 operator +=(const vec4 second){
+	inline vec4 operator +=(const vec4 &second){
 		return vec4(t+=second.t,x+=second.x,y+=second.y,z+=second.z);
 	}
-	inline vec4 operator -=(const vec4 second){
+	inline vec4 operator -=(const vec4 &second){
 		return vec4(t-=second.t,x-=second.x,y-=second.y,z-=second.z);
 	}
 	
@@ -140,7 +140,7 @@ class vec4{
 		return *this;
 	}
 	
-	inline double operator*(vec4 second) const{
+	inline double operator*(const vec4 &second) const{
 		return t*second.t - x*second.x-y*second.y-z*second.z;
 	}
 	
@@ -158,7 +158,7 @@ class vec4{
 };
 
 
-inline vec4 operator *(double a,vec4 P){
+inline vec4 operator *(double a,const vec4 &P){
 	return P*a; 
 }
 

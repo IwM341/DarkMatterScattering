@@ -5,7 +5,7 @@
 #include <functional>
 #include <utility>
 #include <cmath>
-
+#include <vector>
 
 						
 						
@@ -117,5 +117,14 @@ extern inline double integrateRightLogAB5(std::function<double(double)> f,double
 	return sum;
 }	
 
+
+extern inline double integrateAB2(std::vector<double> X,std::vector<double> F){
+	double sum = 0.0;
+	int N = X.size();
+	for (int i = 0; i < N-1; i++){
+		sum += 0.5*(F[i]+F[i+1])*(X[i+1]-X[i]);
+	}
+	return sum;
+}
 			
 #endif

@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <iomanip>
 #include <fstream>
+#include <algorithm>
+#include <map>
 
 template <class T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& V){
@@ -32,14 +34,90 @@ std::vector<T2> apply_function(const std::vector<T1> &X,std::function<T2(T1)> F)
 	return Y;
 }
 
-extern inline std::vector<double> nums_from_string(const std::string &S){
-	std::stringstream ss(S);
-	std::vector<double> nums;
-	double it;
-	while(ss>>it)
-		nums.push_back(it);
-	return nums;
+template <typename T>
+std::vector<T> operator +(const std::vector<T> & X,const std::vector<T> & Y){
+	std::vector<T> Z(X.size());
+	for(size_t i=0;i<X.size();i++)
+		Z[i] = X[i]+Y[i];
+	return Z;
 }
+
+
+template <typename T>
+std::vector<T> operator *(const std::vector<T> & X,const std::vector<T> & Y){
+	std::vector<T> Z(X.size());
+	for(size_t i=0;i<X.size();i++)
+		Z[i] = X[i]*Y[i];
+	return Z;
+}
+
+template <typename T>
+std::vector<T> operator *(const std::vector<T> & X,T Y){
+	std::vector<T> Z(X.size());
+	for(size_t i=0;i<X.size();i++)
+		Z[i] = X[i]*Y;
+	return Z;
+}
+
+template <typename T>
+std::vector<T> operator *(T Y,const std::vector<T> & X){
+	std::vector<T> Z(X.size());
+	for(size_t i=0;i<X.size();i++)
+		Z[i] = X[i]*Y;
+	return Z;
+}
+
+template <typename T>
+std::vector<T> operator -(const std::vector<T> & X,const std::vector<T> & Y){
+	std::vector<T> Z(X.size());
+	for(size_t i=0;i<X.size();i++)
+		Z[i] = X[i]-Y[i];
+	return Z;
+}
+
+template <typename T>
+std::vector<T> operator /(const std::vector<T> & X,const std::vector<T> & Y){
+	std::vector<T> Z(X.size());
+	for(size_t i=0;i<X.size();i++)
+		Z[i] = X[i]/Y[i];
+	return Z;
+}
+
+template <typename T>
+std::vector<T> operator /(const std::vector<T> & X,T Y){
+	std::vector<T> Z(X.size());
+	for(size_t i=0;i<X.size();i++)
+		Z[i] = X[i]/Y;
+	return Z;
+}
+
+template <typename T>
+std::vector<T> operator /(T Y,const std::vector<T> & X){
+	std::vector<T> Z(X.size());
+	for(size_t i=0;i<X.size();i++)
+		Z[i] = Y/X[i];
+	return Z;
+}
+
+
+extern std::vector<double> sqrt(const std::vector<double> &X){
+	std::vector<double> Z(X.size());
+	for(size_t i=0;i<X.size();i++)
+		Z[i] = sqrt(X[i]);
+	return Z; 
+}
+
+template <typename T>
+std::vector<T> parse_string(const std::string &S){
+	std::stringstream ss(S);
+	std::vector<T> parsed;
+	T it;
+	while(ss>>it)
+		parsed.push_back(it);
+	return parsed;
+}
+
+
 
 extern inline find_less(const std::vector<double> &X,double x,
 						size_t i1 = 0,size_t i2 = -1){
@@ -66,79 +144,103 @@ extern inline find_less(const std::vector<double> &X,double x,
 
 template <class T>
 class Function1{
-	std::vector<std::pair<double,T>> XY;
-	
+	//std::vector<std::pair<double,T>> XY;
+	std::vector<double> X;
+	std::vector<double> Y;
 	friend std::ostream& operator<<(std::ostream& os, const Function1<T>& F){
 		
 		size_t prec = os.precision();
 		os <<std::setprecision(17);
-		for (size_t i=0;i<F.XY.size();i++) {
-			os << F.XY[i].first << '\t' <<  F.XY[i].second << std::endl;
+		for (size_t i=0;i<F.size();i++) {
+			os << F.X[i] << '\t' <<  F.Y[i]<< std::endl;
 		}
 		os << std::setprecision(prec);
 		return os;
 	}
-public:
-	Function1(){}
-	Function1(std::vector<std::pair<double,T>> XY):XY(XY){}
-	Function1(const std::vector<double> &X,const std::vector<T> &Y):
-	XY()
-	{
-		if(X.size()!=Y.size()){
-			std::cout << "error: X.size() != Y.size()" << std::endl;
+	void sort(){
+		std::vector<std::pair<double,T>> XY(X.size());
+		for(int i=0;i<X.size();i++){
+			XY[i] = std::pair<double,T>(X[i],Y[i]);
 		}
-		else{
-			XY.resize(X.size());
-			for(size_t i=0;i<X.size();i++){
-				XY[i] = std::pair<double,T>(X[i],Y[i]);
-			}
-		}
-	}
-	void push_back(double x,double y){
-		XY.push_back(std::pair<double,T>(x,y));
-	}
-	void push_back(const std::vector<double> &x,const std::vector<double> &y){
-		if(x.size()!=x.size()){
-			std::cout << "error: x.size() != y.size()" << std::endl;
-		}
-		else{
-			for(size_t i=0;i<x.size();i++){
-				XY.push_back(std::pair<double,T>(x[i],y[i]));
-			}
-		}
-	}
-	void insert(Function1<T> F){
-		XY.insert(XY.end(),F.begin(),F.end());
-	}
-	std::function<T(double)> evald(){
 		std::sort(XY.begin(),XY.end(),
 			[](std::pair<double,T> a,std::pair<double,T> b){
 				return a.first<b.first;
 			}
 		);
-		
-		std::vector<double> X(XY.size());
-		std::vector<T> Y(XY.size());
-		
-		for(size_t i=0;i<XY.size();i++){
+		for(int i=0;i<X.size();i++){
 			X[i] = XY[i].first;
 			Y[i] = XY[i].second;
 		}
-		size_t N = X.size();
-		return [X,Y,N](double x){
-			size_t i = find_less(X,x);
-			size_t i1 = i+1;
-			if(i1 >= N){
-				return Y[i];
-			}
-				
-			double a = (x-X[i])/(X[i1]-X[i]);
-			return (1-a)*Y[i]+a*Y[i1];
-		};
 	}
+	friend Function1<double> Swap(const Function1<double> &F){
+		return Function1<double>(F.Y,F.X);
+	}
+public:
+	Function1(size_t N = 0):X(N),Y(N){}
+	Function1(const std::vector<double> &X):X(X),Y(X.size()){}
+	Function1(const std::vector<double> &X,std::function<T(double)> f):
+		X(X),Y(apply_function(X,f)){}
+	Function1(std::vector<std::pair<double,T>> XY){
+		for(auto xy : XY){
+			X.push_back(xy.first);
+			Y.push_back(xy.second);
+		}
+		sort();
+	}
+	Function1(const std::vector<double> &X,const std::vector<T> &Y,bool sorted = false):
+	X(X),Y(Y){if(!sorted) sort();}
 	
 
+	double &getX(size_t i){return X[i];}
+	double &getY(size_t i){return Y[i];}
 	
+	
+	void push_back(double x,double y){
+		X.push_back(x);
+		Y.push_back(y);
+		sort();
+	}
+	void push_back(const std::vector<double> &x,const std::vector<double> &y){
+		if(x.size()!=y.size()){
+			std::cout << "error: x.size() != y.size()" << std::endl;
+		}
+		else{
+			X.insert(X.end(),x.begin(),x.end());
+			Y.insert(Y.end(),y.begin(),y.end());
+		}
+		sort();
+	}
+	void insert(Function1<T> F){
+		push_back(F.x,F.Y);
+	}
+	T UniformF(double x){
+		size_t i = (x-X[0])/(X[1]-X[0]);
+		size_t i1 = i+1;
+		if(i1 >= X.size()){
+			return Y[X.size()-1];
+		}
+			
+		double a = (x-X[i])/(X[i1]-X[i]);
+		return (1-a)*Y[i]+a*Y[i1];
+	}
+	T operator ()(double x) const{
+		size_t N = X.size();
+		size_t i = find_less(X,x);
+		size_t i1 = i+1;
+		if(i1 >= N){
+			return Y[i];
+		}
+		double a = (x-X[i])/(X[i1]-X[i]);
+		return (1-a)*Y[i]+a*Y[i1];
+	}
+	
+	void map(std::function<T(T)> f){
+		for(auto & y : Y){
+			y = f(y);
+		}
+	}
+	
+	size_t size() const{return X.size();}
 
 };
 
@@ -153,6 +255,7 @@ namespace Function{
 		}
 		return F;
 	}
+	
 }
 
 template <class T>
@@ -184,6 +287,11 @@ class Function2{
 		}
 	}
 public:
+	std::vector<double> getXgrid()const{return X;}
+	std::vector<double> getYgrid(size_t i) const{
+			return std::vector<double> (Y.begin() + Ny[i],Y.begin() + Ny[i+1]);
+		}
+
 	void fullF(std::function<T(double,double)> f){
 		if(F.size() !=Y.size())
 			F.resize(Y.size());
@@ -300,6 +408,10 @@ public:
 		return F[Ny[i] + j];
 	}
 	
+	void map(std::function<T(double)> f){
+		std::for_each(F.begin(), F.end(), f);
+	}
+	
 	std::string toString() const{
 		std::stringstream ss;
 		ss << X << std::endl;
@@ -326,7 +438,7 @@ namespace Function{
 		while(!ifs.eof()){
 			std::string S;
 			std::getline(ifs,S);
-			nums = nums_from_string(S);
+			nums = parse_string<double>(S);
 			if(nums.size() == 3){
 				X.push_back(nums[0]);
 				Y.push_back(nums[1]);
@@ -343,3 +455,31 @@ namespace Function{
 	}
 }
 #endif
+
+namespace Function{
+	
+std::map<std::string, std::vector<double>> CSVTable(const char * filename){
+	std::map<std::string, std::vector<double>> Funcs;
+	std::ifstream ifs(filename, std::ifstream::in);
+	std::string S;
+	std::getline(ifs,S);
+	std::vector<std::string> cols = parse_string<std::string>(S);
+	
+	for(auto title : cols){
+		Funcs[title] = std::vector<double>();
+	}
+	
+	std::vector<double> nums;
+	while(!ifs.eof()){
+		std::getline(ifs,S);
+		nums = parse_string<double>(S);
+		if(nums.size()>=cols.size()){
+			for(size_t i=0;i<cols.size();i++){
+				Funcs[cols[i]].push_back(nums[i]);
+			}
+		}
+	}
+	return Funcs;
+}
+
+}

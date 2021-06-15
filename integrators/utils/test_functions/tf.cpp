@@ -14,18 +14,9 @@ int main(void){
 	
 	std::sort(X.begin(),X.end());
 	
-	double x = ((double)std::rand() )/RAND_MAX;
-	size_t i = find_less(X,x);
-	size_t i1 = i+1;
-	if(i1 >= X.size())
-		i1 = i;
-	std::cout << "X.size() = " <<X.size() <<std::endl;
-	std::cout << X <<std::endl;
-	std::cout << X[i] << " < " << x << " < " <<X[i1] <<std::endl;
 	
 	
 	Function1<double> F1(X,apply_function<double,double>(X,[](double x)->double{return x;}));
-	auto F = F1.evald();
 	
 	/*
 	std::ofstream out("filename.txt");
@@ -34,7 +25,8 @@ int main(void){
 		std::cout << "f(" << x <<") = "<<F(x) << " vs " << x << std::endl;   
 	}
 	*/	
+	auto f = (std::function<double(double)>)F1;
 	Function1<double> F2 = Function::LoadFunction1("filename.txt");
-	std::cout << F2 << std::endl;
+	std::cout << f(3.3) << std::endl;
 	return 0;
 }
