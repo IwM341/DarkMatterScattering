@@ -2,6 +2,7 @@
 #define UTILS_H
 #include "csv_function.hpp"
 #include "integrator.hpp"
+#include "cross_section3.hpp"
 
 #define U0 0.7667e-3
 
@@ -41,6 +42,9 @@ public:
 		}
 		return BM.at(column);
 	}
+	double v_esc() const{
+		return Vesc;
+	}
 	
 };
 
@@ -74,11 +78,28 @@ Function1<double> IntegrateSigma(Function2<double> SigmaVVesc,const std::string 
 	}
 	return Sigma;
 }
-/*
-Function2<double> Sigma(double mass,const std::string &element,
+
+Function2<double> SigmaInelastic(double mass,const std::string &element,
 	const std::vector<double> Ugrid,const std::vector<double> Ve_grid,
-	std::function<double(double,double)> sigmaVVesc{
+	int sigma_type = 0){
+	
+	double mp = ME[element];
+	
+	const auto &PM = BodyModel::Instance();
+	
+	MatrixElementType23 M23 = MET0Q(mp+mass);
+	if(sigma_type == 1)
+		M23 = MET1Q(mp+mass,mass*mp/(mp+mass)*U0);
+	else if(sigma_type == 2)
+		M23 = MET1Q(mp+mass,mass*mp/(mp+mass)*U0,1);
+	else if((sigma_type == 3)
+		M23 = MET2Q(mp+mass,mass*mp/(mp+mass)*U0,mass*mp/(mp+mass)*U0);
+	
+	return Function2<double> SgIn(Ugrid,Ve_grid,[](double u,double ve){
+			return sigmaC(ME[element] mass,sqrt(u*u+ve*ve),ve,M23,2,2,4,40);
+		});
+	
 	
 }
-*/
+
 #endif

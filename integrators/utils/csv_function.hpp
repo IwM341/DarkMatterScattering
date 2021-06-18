@@ -297,6 +297,7 @@ public:
 	void fullF(std::function<T(double,double)> f){
 		if(F.size() !=Y.size())
 			F.resize(Y.size());
+		#pragma omp parallel for 
 		for(size_t i = 0;i<X.size();i++){
 			for(size_t j = 0;j<ny[i];j++){
 				F[Ny[i] + j] = f(X[i],Y[Ny[i] + j]);
@@ -317,7 +318,7 @@ public:
 		
 	}
 	Function2(std::vector<double> Xgrid,
-				std::vector<double> Ygrid,std::vector<T> F):X(Xgrid),
+				std::vector<double> Ygrid,std::vector<T> F ):X(Xgrid),
 				Y(Xgrid.size()*Ygrid.size()),F(F),
 				ny(Xgrid.size(),Ygrid.size()){
 		fullNy();
@@ -339,6 +340,19 @@ public:
 				Y[_Ny*i+j] = Ygrid[j];
 		}
 		fullF(f);
+	}
+	
+	Function2(std::vector<double> Xgrid,
+				std::vector<double>Ygrid):X(Xgrid),
+				Y(Xgrid.size()*Ygrid.size()),F(Xgrid.size()*Ygrid.size()),
+				ny(Xgrid.size(),Ygrid.size()){
+		fullNy();
+		
+		size_t _Ny = Ygrid.size();
+		for(size_t i=0;i<ny.size();i++){
+			for(size_t j=0;j<Ygrid.size();j++)
+				Y[_Ny*i+j] = Ygrid[j];
+		}
 	}
 	
 	Function2(size_t Nx,size_t Ny):X(Nx),Y(Nx*Ny),F(Nx*Ny),

@@ -487,6 +487,7 @@ extern inline double sigmaC(double mp,double mk,double v_ls,double v_esc,
 			},0,ke,Nk);
 	}
 	else{
+		return 0;
 		//std::cout << "hard kinematics (kt+ke < k1p)" <<std::endl;
 		double cosTh_cr = (ke*ke - kt*kt-k0*k0)/(2*k0*kt);
 		//std::cout << "cosTh_cr = " << cosTh_cr <<std::endl;
@@ -499,7 +500,7 @@ extern inline double sigmaC(double mp,double mk,double v_ls,double v_esc,
 		const vec4 P0 = vec4(vec3(0,0,-k0),mp);
 		const vec4 K0 = vec4(vec3(0,0,k0),mk);
 		
-		double reg_sigma = integrateAB5([Ecm,&P0,&K0,&M22,alpha,delta,mp,mk,NTh,k0](double Th){
+		//double reg_sigma = integrateAB5([Ecm,&P0,&K0,&M22,alpha,delta,mp,mk,NTh,k0](double Th){
 		double reg_sigma = integrateAB5([Ecm,&P0,&K0,&M22,alpha,delta,mp,mk,NTh,k0](double Th){
 				
 				const vec4 P1 = vec4(vec3(-k0*sin(Th),0,-k0*cos(Th)),mp);
@@ -568,6 +569,45 @@ extern inline double sigmaC(double mp,double mk,double v_ls,double v_esc,
 	
 	
 	
+}
+
+extern inline double sigmaC(double mp,double mk,double v_ls,double v_esc,MatrixElementType23 M23,
+							int Nphi = 6,int NTh1 = 6,int NTh = 10,int Nk = 40){
+							
+	double k0 = v_ls*mp*mk/(mp+mk);
+	double kt = v_ls*mk*mk/(mp+mk);
+	double ke = v_esc*mk;
+	
+	double Ep = E(mp,k0);
+	double Ek = E(mk,k0);
+
+		
+	double Ecm = Ep + Ek;
+							
+	
+	if(kt*(1+1e-8) >= ke + k0)
+		return 0;
+	if(kt+ke <= k0){
+		auto dsigmaN = dsigma_d3k1(mk,mp,k0,M23,Nphi,NTh1);
+		return integrateAB5([kt,dsigmaN,NTh](double ke_s){
+				return integrateAB5([ke_s,kt,dsigmaN](double ThetaVe){
+						double kx = ke_s*sin(ThetaVe);
+						double kz = - kt + ke_s*cos(ThetaVe);
+						
+						double k1 = sqrt(kx*kx+kz*kz);
+						double cosTh = 0;
+						if(kz > 0)
+							cosTh = 1./sqrt(1.+(kx*kx)/(kz*kz));
+						else
+							cosTh = -1./sqrt(1.+(kx*kx)/(kz*kz));
+							
+						return dsigmaN(k1,cosTh)*sin(ThetaVe)*2*M_PI*ke_s*ke_s;
+					},0,M_PI,NTh);
+			},0,ke,Nk);
+	}
+	else{
+		return 0;
+	}
 }
 #endif
 
