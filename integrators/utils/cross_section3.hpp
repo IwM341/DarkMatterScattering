@@ -21,7 +21,7 @@
 #define INTEGRATOR integrateAB
 #endif
 
-inline double fase_volume_density(double k1,double Ecm,double Ek0,double Ek1,double cosTh1){
+extern inline double fase_volume_density(double k1,double Ecm,double Ek0,double Ek1,double cosTh1){
 	double q_part = Ecm - Ek1 - k1*cosTh1;
 	return ( k1* k1*Ecm*(Ek0-Ek1))/(8*q_part*q_part*phase_2pi4*Ek1);
 }
@@ -499,7 +499,8 @@ extern inline double sigmaC(double mp,double mk,double v_ls,double v_esc,
 		const vec4 P0 = vec4(vec3(0,0,-k0),mp);
 		const vec4 K0 = vec4(vec3(0,0,k0),mk);
 		
-		double reg_sigma = integrateAB5([Ecm,P0,K0,M22,alpha,delta,mp,mk,NTh,k0](double Th){
+		double reg_sigma = integrateAB5([Ecm,&P0,&K0,&M22,alpha,delta,mp,mk,NTh,k0](double Th){
+		double reg_sigma = integrateAB5([Ecm,&P0,&K0,&M22,alpha,delta,mp,mk,NTh,k0](double Th){
 				
 				const vec4 P1 = vec4(vec3(-k0*sin(Th),0,-k0*cos(Th)),mp);
 				const vec4 K1 = vec4(vec3(k0*sin(Th),0,k0*cos(Th)),mk);

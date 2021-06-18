@@ -178,14 +178,19 @@ class Function1{
 public:
 	Function1(size_t N = 0):X(N),Y(N){}
 	Function1(const std::vector<double> &X):X(X),Y(X.size()){}
-	Function1(const std::vector<double> &X,std::function<T(double)> f):
-		X(X),Y(apply_function(X,f)){}
-	Function1(std::vector<std::pair<double,T>> XY){
+	Function1(const std::vector<double> &X,std::function<T(double)> f,bool sorted = false):
+		X(X){
+			if(!sorted)
+				std::sort(X.begin(),X.end());
+			Y = apply_function(X,f);
+		}
+	Function1(std::vector<std::pair<double,T>> XY,bool sorted = false){
 		for(auto xy : XY){
 			X.push_back(xy.first);
 			Y.push_back(xy.second);
 		}
-		sort();
+		if(!sorted)
+			sort();
 	}
 	Function1(const std::vector<double> &X,const std::vector<T> &Y,bool sorted = false):
 	X(X),Y(Y){if(!sorted) sort();}
@@ -287,10 +292,7 @@ class Function2{
 		}
 	}
 public:
-	std::vector<double> getXgrid()const{return X;}
-	std::vector<double> getYgrid(size_t i) const{
-			return std::vector<double> (Y.begin() + Ny[i],Y.begin() + Ny[i+1]);
-		}
+	
 
 	void fullF(std::function<T(double,double)> f){
 		if(F.size() !=Y.size())
@@ -388,7 +390,10 @@ public:
 		}
 		
 	}
-	
+	std::vector<double> getXgrid()const{return X;}
+	std::vector<double> getYgrid(size_t i) const{
+			return std::vector<double> (Y.begin() + Ny[i],Y.begin() + Ny[i+1]);
+		}
 	double &getX(size_t i){
 		return X[i];
 	}
@@ -423,6 +428,10 @@ public:
 		return ss.str(); 
 	}
 	
+	Function1<T> atX(size_t i) const{
+		return Function1<T>(std::vector<double>(Y.begin()+Ny[i],Y.begin()+Ny[i+1]),
+						std::vector<T>(F.begin()+Ny[i],F.begin()+Ny[i+1]),true);
+	}
 };
 
 namespace Function{
@@ -454,13 +463,19 @@ namespace Function{
 		return Function2<double>(X,Y,ny,F);
 	}
 }
-#endif
+
 
 namespace Function{
 	
-std::map<std::string, std::vector<double>> CSVTable(const char * filename){
+extern inline std::map<std::string, std::vector<double>> CSVTable(const char * filename){
 	std::map<std::string, std::vector<double>> Funcs;
 	std::ifstream ifs(filename, std::ifstream::in);
+	
+	if(!ifs.is_open()){
+		std::cout << "CSVTable error: no such file" <<std::endl;
+		return std::map<std::string, std::vector<double>>();
+	}
+	
 	std::string S;
 	std::getline(ifs,S);
 	std::vector<std::string> cols = parse_string<std::string>(S);
@@ -483,3 +498,4 @@ std::map<std::string, std::vector<double>> CSVTable(const char * filename){
 }
 
 }
+#endif
