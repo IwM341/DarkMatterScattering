@@ -5,9 +5,10 @@
 #include <iostream>
 #include <cmath>
 #include "integrator.hpp" 
+#include "omp.h" 
 #include "phase4.hpp"
 #include <functional>
-
+#include "cstdlib"
 
 #define  phase_2pi1   6.2831853071795864770
 #define  phase_2pi2   39.478417604357434476
@@ -609,5 +610,110 @@ extern inline double sigmaC(double mp,double mk,double v_ls,double v_esc,MatrixE
 		return 0;
 	}
 }
+
+const double MX = RAND_MAX; 
+const double FcE = 1e-10;
+const double Fc = (1.0 - FcE);
+extern inline double weight_xi(double xi,double xi_min){
+	return sqrt(2/M_PI)*xi*exp(-xi_min*xi_min/2); 
+}
+extern inline double random_xi(double xi_min){
+	const double dT = exp(-xi_min*xi_min/2);
+	const double t = std::rand()/MX*Fc+FcE;
+	return sqrt(-2*log(dT*t));
+}
+extern inline double random_cos(){
+	return 2*std::rand()/MX-1;
+}
+
+extern inline double sigma_facotor_capture(double v,double u0,double cosTh_0, double cosTh1,int type= 0){
+	double x = (1.0-cosTh1)/2;
+	double y = (1.0+cosTh1)/2;
+	double t = (v/u0)*(v/u0);
+	if(type == 0)
+		return x;
+	else if(type == 1)
+		return x*(1-y*cosTh_0)*t;
+	else {
+		return x*(1-y*
+					(1.5*cosTh_0+0.75*cosTh_0*cosTh_0-0.25+
+					y*(1.5*cosTh_0*cosTh_0-0.5)))*t*t;
+	}
+}
+
+extern inline double sigma_facotor_esc(double v,double u0,double cosTh_0, double cosTh1,int type= 0){
+	double x = (1.0-cosTh1)/2;
+	double y = (1.0+cosTh1)/2;
+	double t = (v/u0)*(v/u0);
+	if(type == 0)
+		return y;
+	else if(type == 1)
+		return y*(1+x*cosTh_0)*t;
+	else {
+		return y*(1+x*
+					(1.5*cosTh_0-0.75*cosTh_0*cosTh_0+0.25+
+					x*(1.5*cosTh_0*cosTh_0-0.5)))*t*t;
+	}
+}
+ 
+enum EscapeOrCapture{
+	CAPTURE,ESCAPE
+};
+
+double sigmaTfacor(double mp,double mk,double v,double vesc,double u0,double wT,
+					EscapeOrCapture esc,int type,size_t N){
+	
+	double wTmin = (mp+mk)/(2*mp)*(abs((mp-mk)/(mk+mk)) - vesc);
+	if(wTmin <0)
+		wTmin = 0;
+	
+	std::cout << "wTmin = " << wTmin <<std::endl;
+	double rmin = wTmin/wT;
+	
+	std::cout << "wr = " << rmin <<std::endl;
+	
+	double sum = 0.0;
+	vec3 V(0,0,v);
+	#pragma omp parallel reduction(+:sum)
+	{
+		double sumt = 0.0;
+		size_t threadnum = omp_get_num_threads();
+		size_t Nt = N/threadnum + 1;
+		
+		//std::cout << threadnum << std::endl;
+		std::srand(int(time(NULL)) * (omp_get_thread_num()+1));
+		//#pragma omp parallel for reduction(+:sum)
+		for(size_t i=0;i<Nt;i++){
+			double cosR = random_cos();
+			double r = random_xi(rmin);
+			double w = r*wT;
+			vec3 W(0,w*sqrt(1-cosR*cosR),w*cosR);
+			vec3 Vt = (mp*W+mk*V)/(mp+mk);
+			vec3 Vc = (mp/(mp+mk))*(V-W);
+			double vt = Vt.norm();
+			double vc = Vc.norm();
+			
+			double cosTh_0 = -(Vt*Vc)/(vt*vc);
+			double cosTh_1 = (vt*vt+vc*vc-vesc*vesc)/(2*vc*vt);
+			
+			if(-1<=cosTh_1<=1){
+				if(esc == CAPTURE)
+					sumt += weight_xi(wTmin)*sigma_facotor_capture(vc,u0,cosTh_0,cosTh_1,type);
+				else
+					sumt += weight_xi(wTmin)*sigma_facotor_esc(vc,u0,cosTh_0,cosTh_1,type);
+			}
+
+			//sumt +=  weight_xi(r,rmin)*w*cosR*cosR;
+			/*
+			if(1){
+				std::cout << std::to_string(omp_get_thread_num()) + ", i= " + std::to_string(i) + 
+					": " + std::to_string(sum) +  "\nr = " + std::to_string(r) + "\n\n";
+			}*/
+		}
+		sum += sumt/(Nt*threadnum);
+	}
+	return sum;
+}
+
 #endif
 

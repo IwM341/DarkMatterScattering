@@ -3,6 +3,7 @@
 #include "csv_function.hpp"
 #include "integrator.hpp"
 #include "cross_section3.hpp"
+#include "matrix_element.hpp"
 
 #define U0 0.7667e-3
 
@@ -20,10 +21,16 @@ const std::map<std::string, double> ME({
 class BodyModel{
 	std::map<std::string, std::vector<double>> BM;
 	double Vesc;
-	
+	double VescMax;
 	BodyModel():BM(Function::CSVTable("earth_model.dat")),
 		Vesc(3.7336e-5){
 		
+		if(BM.find("Vesc") == BM.end()){
+			double vesc = Vesc;
+			BM["Vesc"] = apply_function<double,double>
+			(BM.at("phi"),[vesc](double x)->double{return sqrt(x)*vesc;});
+		}
+		VescMax = BM["Vesc"][0];
 	}
 	BodyModel(const BodyModel& root);
 	BodyModel& operator = (const BodyModel&);
@@ -35,15 +42,21 @@ public:
 		return Inst;
 	}
 	
-	std::vector<double> operator[](const std::string & column) const{
-		if(column == "Vesc"){
-			double vesc = Vesc;
-			return apply_function<double,double>(BM.at("phi"),[vesc](double x)->double{return sqrt(x)*vesc;});
-		}
+	const std::vector<double> &operator[](const std::string & column) const{
 		return BM.at(column);
 	}
-	double v_esc() const{
+	bool isExist(const std::string & column) const{
+		if(BM.find(column) == BM.end())
+			return false;
+		else 
+			return true;
+	}
+	
+	double VeMin() const{
 		return Vesc;
+	}
+	double VeMax() const{
+		return VescMax;
 	}
 	
 };
@@ -68,7 +81,7 @@ Function1<double> IntegrateSigma(Function2<double> SigmaVVesc,const std::string 
 	for(size_t i=0;i<N;i++){
 		double U = US[i];
 		auto Vi = SigmaVVesc.atX(i);
-		Sigma.getY(i) = 3.0/(U0*U0*mass)*
+		Sigma.getY(i) = 3.0/(U0*U0)*
 		integrateAB2(Xi,
 			apply_function<double,double>(Vesc,[U,&Vi](double vesc){
 				double v = sqrt(vesc*vesc+U*U);
@@ -83,20 +96,24 @@ Function2<double> SigmaInelastic(double mass,const std::string &element,
 	const std::vector<double> Ugrid,const std::vector<double> Ve_grid,
 	int sigma_type = 0){
 	
-	double mp = ME[element];
+	
+	
+	double mp = ME.at(element);
 	
 	const auto &PM = BodyModel::Instance();
-	
+	if(!PM.isExist(element))
+		return Function2<double>();
+
 	MatrixElementType23 M23 = MET0Q(mp+mass);
 	if(sigma_type == 1)
 		M23 = MET1Q(mp+mass,mass*mp/(mp+mass)*U0);
 	else if(sigma_type == 2)
 		M23 = MET1Q(mp+mass,mass*mp/(mp+mass)*U0,1);
-	else if((sigma_type == 3)
+	else if(sigma_type == 3)
 		M23 = MET2Q(mp+mass,mass*mp/(mp+mass)*U0,mass*mp/(mp+mass)*U0);
 	
-	return Function2<double> SgIn(Ugrid,Ve_grid,[](double u,double ve){
-			return sigmaC(ME[element] mass,sqrt(u*u+ve*ve),ve,M23,2,2,4,40);
+	return Function2<double>(Ugrid,Ve_grid,[mp,mass,M23](double u,double ve){
+			return sigmaC(mp,mass,sqrt(u*u+ve*ve),ve,M23,2,2,4,40);
 		});
 	
 	
