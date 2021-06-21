@@ -119,4 +119,34 @@ Function2<double> SigmaInelastic(double mass,const std::string &element,
 	
 }
 
+Function2<double> SigmaElastic(double mass,const std::string &element,
+	const std::vector<double> Ugrid,const std::vector<double> Ve_grid,int sigma_type = 0){
+	
+	const auto &PM = BodyModel::Instance();
+	if(!PM.isExist(element))
+		return Function2<double>();
+	
+	
+	double mp = ME.at(element);
+	
+	return Function2<double>(Ugrid,Ve_grid,[mp,mass,sigma_type](double u,double ve){
+			return sigmaTfacor(mp,mass,sqrt(u*u+ve*ve),ve,U0,0/*Temp*/,CAPTURE,sigma_type,100);
+		});
+}
+
+Function2<double> SigmaEscape(double mass,const std::string &element,
+	const std::vector<double> v_grid,const std::vector<double> ve_grid,int sigma_type = 0){
+	
+	const auto &PM = BodyModel::Instance();
+	if(!PM.isExist(element))
+		return Function2<double>();
+	
+	
+	double mp = ME.at(element);
+	
+	return Function2<double>(v_grid,ve_grid,[mp,mass,sigma_type](double v,double ve){
+			return sigmaTfacor(mp,mass,v,ve,U0,0/*Temp*/,ESCAPE,sigma_type,100);
+		});
+}
+
 #endif

@@ -633,10 +633,10 @@ extern inline double sigma_facotor_capture(double v,double u0,double cosTh_0, do
 	if(type == 0)
 		return x;
 	else if(type == 1)
-		return x*(1-y*cosTh_0)*t;
+		return x*(1.0-y*cosTh_0)*t;
 	else {
-		return x*(1-y*
-					(1.5*cosTh_0+0.75*cosTh_0*cosTh_0-0.25+
+		return x*(1.0-y*
+					(1.5*cosTh_0+0.75*cosTh_0*cosTh_0-0.25-
 					y*(1.5*cosTh_0*cosTh_0-0.5)))*t*t;
 	}
 }
@@ -648,9 +648,9 @@ extern inline double sigma_facotor_esc(double v,double u0,double cosTh_0, double
 	if(type == 0)
 		return y;
 	else if(type == 1)
-		return y*(1+x*cosTh_0)*t;
+		return y*(1.0+x*cosTh_0)*t;
 	else {
-		return y*(1+x*
+		return y*(1.0+x*
 					(1.5*cosTh_0-0.75*cosTh_0*cosTh_0+0.25+
 					x*(1.5*cosTh_0*cosTh_0-0.5)))*t*t;
 	}
@@ -663,13 +663,14 @@ enum EscapeOrCapture{
 double sigmaTfacor(double mp,double mk,double v,double vesc,double u0,double wT,
 					EscapeOrCapture esc,int type,size_t N){
 	
-	double wTmin = (mp+mk)/(2*mp)*(abs((mp-mk)/(mk+mk)) - vesc);
+	double wTmin = (mp+mk)/(2*mp)*(abs((mp-mk)/(mp+mk))*v - vesc);
 	if(wTmin <0)
 		wTmin = 0;
 	
 	std::cout << "wTmin = " << wTmin <<std::endl;
 	double rmin = wTmin/wT;
-	
+	if(wT <=0)
+		rmin = 0;
 	std::cout << "wr = " << rmin <<std::endl;
 	
 	double sum = 0.0;
@@ -693,16 +694,37 @@ double sigmaTfacor(double mp,double mk,double v,double vesc,double u0,double wT,
 			double vt = Vt.norm();
 			double vc = Vc.norm();
 			
-			double cosTh_0 = -(Vt*Vc)/(vt*vc);
-			double cosTh_1 = (vt*vt+vc*vc-vesc*vesc)/(2*vc*vt);
-			
-			if(-1<=cosTh_1<=1){
-				if(esc == CAPTURE)
-					sumt += weight_xi(wTmin)*sigma_facotor_capture(vc,u0,cosTh_0,cosTh_1,type);
-				else
-					sumt += weight_xi(wTmin)*sigma_facotor_esc(vc,u0,cosTh_0,cosTh_1,type);
+			if(vc != 0){
+				if(vesc+vt <= vc){
+					if(esc == ESCAPE){
+						sumt += weight_xi(r,rmin)*pow(vc/u0,type*2);
+						//std::cout << "easy ESCAPE" <<std::endl;
+					}
+				}
+				else if(vc+vt<=vesc){
+					if(esc == CAPTURE)
+						sumt += weight_xi(r,rmin)*pow(vc/u0,type*2);
+						//std::cout << "easy CAPTURE" <<std::endl;
+				}
+				else if(vesc+vc <= vt){
+					if(esc == ESCAPE)
+						sumt += weight_xi(r,rmin)*pow(vc/u0,type*2);
+				}
+				else if(vt >= 0){
+				
+					double cosTh_0 = -(Vt*Vc)/(vt*vc);
+					double cosTh_1 = (vt*vt+vc*vc-vesc*vesc)/(2*vc*vt);
+					
+					if(-1.0 <= cosTh_1 &&cosTh_1 <= 1.0){
+						if(esc == CAPTURE){
+							sumt += weight_xi(r,rmin)*sigma_facotor_capture(vc,u0,cosTh_0,cosTh_1,type);
+						}
+						else{
+							sumt += weight_xi(r,rmin)*sigma_facotor_esc(vc,u0,cosTh_0,cosTh_1,type);
+						}
+					}
+				}
 			}
-
 			//sumt +=  weight_xi(r,rmin)*w*cosR*cosR;
 			/*
 			if(1){

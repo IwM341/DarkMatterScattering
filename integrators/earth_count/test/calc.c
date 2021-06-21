@@ -34,6 +34,10 @@ int main(void){
 	
 	std::cout <<"*/
 	
-	std::cout << sigmaTfacor(10,10,1,1,1,1,ESCAPE,0,1000000) << std::endl;
+	double cpt = sigmaTfacor(10,1,1,0.1,1,0.0,CAPTURE,2,1000000);
+	double esc =  sigmaTfacor(10,1,0.5,1,1,0.1,ESCAPE,2,1000000);
+	
+	std::cout << cpt << std::endl;
+	std::cout << esc << std::endl;
 	return 0;
 }
