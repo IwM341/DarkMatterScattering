@@ -181,8 +181,8 @@ public:
 	Function1(const std::vector<double> &X,std::function<T(double)> f,bool sorted = false):
 		X(X){
 			if(!sorted)
-				std::sort(X.begin(),X.end());
-			Y = apply_function(X,f);
+				std::sort(this->X.begin(),this->X.end());
+			Y = apply_function<double,T>(this->X,f);
 		}
 	Function1(std::vector<std::pair<double,T>> XY,bool sorted = false){
 		for(auto xy : XY){
@@ -199,6 +199,12 @@ public:
 	double &getX(size_t i){return X[i];}
 	double &getY(size_t i){return Y[i];}
 	
+	std::vector<double> getXgrid() const{
+		return X;
+	}
+	std::vector<double> getYgrid() const{
+		return Y;
+	}
 	
 	void push_back(double x,double y){
 		X.push_back(x);

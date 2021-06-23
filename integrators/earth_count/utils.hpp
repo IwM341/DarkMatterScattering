@@ -11,11 +11,11 @@
 
 const std::map<std::string, double> ME({
 			{"H1",1.0},{"He4",4.0},{"He3",3.0},{"C12",12.0},{"C13",13.0},
-			{"N14",14.0},{"N15",15.0},{"O16",16.0},{"O17",17.0},{"O18",18.0},
+			{"N14",14.0},{"N15",15.0},{"O",16.0},{"O16",16.0},{"O17",17.0},{"O18",18.0},
 			{"Ne",20.0},{"Na",23.0},{"Mg",24.0},{"Al",27.0},{"Si",28.0},{"P",31.0},
 			{"S",32.0},{"Cl",35.5},{"Ar",40.0},{"K",39.0},{"Ca",40.0},
 			{"Sc",45.0},{"Ti",48.0},{"V",51.0},{"Cr",52.0},{"Ca",40.0},
-			{"Mn",55.0},{"Fe",55.8},{"Co",59.0},{"Ca",59.0}
+			{"Mn",55.0},{"Fe",55.8},{"Ni",59.0},{"Co",59.0},{"Ca",59.0}
 			});
 	
 class BodyModel{
@@ -119,23 +119,33 @@ Function2<double> SigmaInelastic(double mass,const std::string &element,
 	
 }
 
+#define KGeV 8.617333262e-14
 Function2<double> SigmaElastic(double mass,const std::string &element,
-	const std::vector<double> Ugrid,const std::vector<double> Ve_grid,int sigma_type = 0){
+	const std::vector<double> Ugrid,const std::vector<double> Ve_grid,
+	int considerTemp = 0,
+	int sigma_type = 0,size_t Nmk = 10000){
+	
 	
 	const auto &PM = BodyModel::Instance();
 	if(!PM.isExist(element))
 		return Function2<double>();
 	
 	
+	
 	double mp = ME.at(element);
 	
-	return Function2<double>(Ugrid,Ve_grid,[mp,mass,sigma_type](double u,double ve){
-			return sigmaTfacor(mp,mass,sqrt(u*u+ve*ve),ve,U0,0/*Temp*/,CAPTURE,sigma_type,100);
+	Function1<double> WT(PM["Vesc"], apply_function<double,double>(
+		PM["Temp"],[mp,considerTemp](double T){return considerTemp*sqrt(KGeV*T/mp);}));
+	//std::cout << WT <<std::endl;
+	
+	return Function2<double>(Ugrid,Ve_grid,[&WT,mp,mass,sigma_type,considerTemp,Nmk](double u,double ve){
+			return sigmaTfacor(mp,mass,sqrt(u*u+ve*ve),ve,mp/(mp+mass)*U0,WT(ve),CAPTURE,sigma_type,Nmk);
 		});
 }
 
 Function2<double> SigmaEscape(double mass,const std::string &element,
-	const std::vector<double> v_grid,const std::vector<double> ve_grid,int sigma_type = 0){
+	const std::vector<double> v_grid,const std::vector<double> ve_grid,
+	int sigma_type = 0,size_t Nmk = 10000){
 	
 	const auto &PM = BodyModel::Instance();
 	if(!PM.isExist(element))
@@ -144,9 +154,30 @@ Function2<double> SigmaEscape(double mass,const std::string &element,
 	
 	double mp = ME.at(element);
 	
-	return Function2<double>(v_grid,ve_grid,[mp,mass,sigma_type](double v,double ve){
-			return sigmaTfacor(mp,mass,v,ve,U0,0/*Temp*/,ESCAPE,sigma_type,100);
+	return Function2<double>(v_grid,ve_grid,[mp,mass,sigma_type,Nmk](double v,double ve){
+			return sigmaTfacor(mp,mass,v,ve,mp/(mp+mass)*U0,0/*Temp*/,ESCAPE,sigma_type,Nmk);
 		});
 }
 
+extern inline double thc(double x){
+	double Ex = exp(x);
+	if(x<0.5){
+		return (1.0+x/2*(1.0+x/3*(1.0+x/4*(1.0+x/5*(1.+x/6*(1.+x/7*(1.+x/8*(1.+x/9*(1.+x/(10*(1.-x/11)))))))))))/Ex;
+	}
+	else
+		return (Ex-1.0)/(Ex*x);
+}
+
+extern inline double fu(double u,double u0,double su){
+	double D = 2*su*su;
+	return exp(-(u-u0)*(u-u0)/(D))/pow(M_PI*D,1.5)*thc(4*u*u0/D);
+}
+
+double C_ND(Function1<double> Sigma,double su){
+	auto U = Sigma.getXgrid();
+	return integrateAB2(U,Sigma.getYgrid()*U*apply_function<double,double>(U,[su](double u){
+			return 4*M_PI*U0*fu(u,U0,su);
+		}) 
+		);
+}
 #endif

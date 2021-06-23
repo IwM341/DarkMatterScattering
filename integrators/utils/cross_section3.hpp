@@ -663,15 +663,21 @@ enum EscapeOrCapture{
 double sigmaTfacor(double mp,double mk,double v,double vesc,double u0,double wT,
 					EscapeOrCapture esc,int type,size_t N){
 	
-	double wTmin = (mp+mk)/(2*mp)*(abs((mp-mk)/(mp+mk))*v - vesc);
+	double wTmin = (mp+mk)/(2*mp)*(std::abs((mp-mk)/(mp+mk))*v - vesc);
+	
+	
+	
 	if(wTmin <0)
 		wTmin = 0;
 	
-	std::cout << "wTmin = " << wTmin <<std::endl;
+	
 	double rmin = wTmin/wT;
 	if(wT <=0)
 		rmin = 0;
-	std::cout << "wr = " << rmin <<std::endl;
+	//std::cout << "wr = " << rmin <<std::endl;
+	//std::cout << std::string("rmin = ") + std::to_string(rmin) + "\n";
+	if(rmin > 10)
+		return 0.0;
 	
 	double sum = 0.0;
 	vec3 V(0,0,v);
