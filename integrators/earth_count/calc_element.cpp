@@ -142,6 +142,7 @@ int main(int argc,char**argv){
 	//std::cout << mgrid <<std::endl;
 	Function2<double> Sgm;
 	for(size_t i=0;i<mgrid.size();i++){
+		std::cout << mgrid[i] <<std::endl;
 		if(isElastic)
 			Sgm = SigmaElastic(mgrid[i],el,Ugrid,VescGrid,isTemp,sigma_type,10000);
 		else
