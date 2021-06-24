@@ -142,6 +142,7 @@ extern inline find_less(const std::vector<double> &X,double x,
 }
 
 
+
 template <class T>
 class Function1{
 	//std::vector<std::pair<double,T>> XY;
@@ -256,11 +257,15 @@ public:
 };
 
 namespace Function{
-	Function1<double> LoadFunction1(const char *filename){
+	Function1<double> LoadFunction1(const char *filename,bool isTitle = true){
 		Function1<double> F;
 		std::ifstream ifs(filename, std::ifstream::in);
 		double x;
 		double y;
+		if(isTitle){
+			std::string S;
+			std::getline(ifs,S);
+		}
 		while(ifs>>x>>y){
 			F.push_back(x,y);
 		}
@@ -455,13 +460,18 @@ public:
 };
 
 namespace Function{
-	Function2<double> LoadFunction2(const char *filename){
+	Function2<double> LoadFunction2(const char *filename,bool isTitle  = true){
 		std::vector<double> X;
 		std::vector<double> Y;
 		std::vector<double> F;
 		std::vector<size_t> ny;
 		std::vector<size_t> Ny;
 		std::ifstream ifs(filename, std::ifstream::in);
+		
+		if(isTitle){
+			std::string S;
+			std::getline(ifs,S);
+		}
 		
 		std::vector<double> nums;
 		while(!ifs.eof()){

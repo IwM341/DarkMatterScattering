@@ -13,10 +13,12 @@ const std::map<std::string, double> ME({
 			{"H1",1.0},{"He4",4.0},{"He3",3.0},{"C12",12.0},{"C13",13.0},
 			{"N14",14.0},{"N15",15.0},{"O",16.0},{"O16",16.0},{"O17",17.0},{"O18",18.0},
 			{"Ne",20.0},{"Na",23.0},{"Mg",24.0},{"Al",27.0},{"Si",28.0},{"P",31.0},
-			{"S",32.0},{"Cl",35.5},{"Ar",40.0},{"K",39.0},{"Ca",40.0},
+			{"S",32.0},{"Cl35",35.0},{"Cl36",36.0},{"Ar",40.0},{"K",39.0},{"Ca",40.0},
 			{"Sc",45.0},{"Ti",48.0},{"V",51.0},{"Cr",52.0},{"Ca",40.0},
-			{"Mn",55.0},{"Fe",55.8},{"Ni",59.0},{"Co",59.0},{"Ca",59.0}
+			{"Mn",55.0},{"Fe",56.0},{"Ni",59.0},{"Co",59.0},{"Ca",59.0}
 			});
+
+const std::vector<std::string> EarthElements({"Fe","O","Si","Mg","Ni","Ca","Al"}); 
 	
 class BodyModel{
 	std::map<std::string, std::vector<double>> BM;
@@ -180,4 +182,29 @@ double C_ND(Function1<double> Sigma,double su){
 		}) 
 		);
 }
+
+
+std::vector<double> grid(size_t N,double Umin,double Umax,double q,double eps){
+	std::vector<double> __grid(N);
+	
+	double et = pow(eps,1/q);
+	double Z = pow(1+eps,1/q)-et; 
+	
+	double h = 1.0/(N-1);
+	for(size_t i=0;i<N;i++){
+		double t = i*h;
+		__grid[i] = (pow(t*Z+et,q)-eps)*(Umax-Umin) + Umin;
+	}
+	return __grid;
+}
+
+std::string Filename(const std::string path,const std::string element,
+				int isElastic,double mk,int sigmaType){
+	std::string elastictype = "In";
+	if(isElastic)
+		elastictype = "El";
+	return (path + elastictype + "(" + element +
+		", " + std::to_string(mk) + ", " +  std::to_string(sigmaType) + ").dat");
+}
+
 #endif
