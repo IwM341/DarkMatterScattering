@@ -109,9 +109,9 @@ Function2<double> SigmaInelastic(double mass,const std::string &element,
 	MatrixElementType23 M23 = MET0Q(mp+mass);
 	if(sigma_type == 1)
 		M23 = MET1Q(mp+mass,mass*mp/(mp+mass)*U0);
-	else if(sigma_type == 2)
+	else if(sigma_type == -1)
 		M23 = MET1Q(mp+mass,mass*mp/(mp+mass)*U0,1);
-	else if(sigma_type == 3)
+	else if(sigma_type == 2)
 		M23 = MET2Q(mp+mass,mass*mp/(mp+mass)*U0,mass*mp/(mp+mass)*U0);
 	
 	return Function2<double>(Ugrid,Ve_grid,[mp,mass,M23](double u,double ve){
