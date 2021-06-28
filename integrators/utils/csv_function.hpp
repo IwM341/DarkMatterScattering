@@ -308,7 +308,7 @@ public:
 	void fullF(std::function<T(double,double)> f){
 		if(F.size() !=Y.size())
 			F.resize(Y.size());
-		#pragma omp parallel for 
+		#pragma omp parallel for shared(X,Y,F)
 		for(size_t i = 0;i<X.size();i++){
 			for(size_t j = 0;j<ny[i];j++){
 				F[Ny[i] + j] = f(X[i],Y[Ny[i] + j]);

@@ -14,8 +14,17 @@ const std::map<std::string, double> ME({
 			{"N14",14.0},{"N15",15.0},{"O",16.0},{"O16",16.0},{"O17",17.0},{"O18",18.0},
 			{"Ne",20.0},{"Na",23.0},{"Mg",24.0},{"Al",27.0},{"Si",28.0},{"P",31.0},
 			{"S",32.0},{"Cl35",35.0},{"Cl36",36.0},{"Ar",40.0},{"K",39.0},{"Ca",40.0},
-			{"Sc",45.0},{"Ti",48.0},{"V",51.0},{"Cr",52.0},{"Ca",40.0},
-			{"Mn",55.0},{"Fe",56.0},{"Ni",59.0},{"Co",59.0},{"Ca",59.0}
+			{"Sc",45.0},{"Ti",48.0},{"V",51.0},{"Cr",52.0},
+			{"Mn",55.0},{"Fe",56.0},{"Ni",59.0},{"Co",59.0},
+			});
+
+const std::map<std::string, int> QE({
+			{"H1",1},{"He4",2},{"He3",2},{"C12",6},{"C13",6},
+			{"N14",7},{"N15",7},{"O",8},{"O16",8},{"O17",8},{"O18",8},
+			{"Ne",10},{"Na",11},{"Mg",12},{"Al",13},{"Si",14},{"P",15},
+			{"S",16},{"Cl35",18},{"Cl36",18},{"Ar",18},{"K",19},{"Ca",20},
+			{"Sc",21},{"Ti",22},{"V",23},{"Cr",24},{"Ca",40.0},
+			{"Mn",25},{"Fe",26},{"Ni",28}
 			});
 
 const std::vector<std::string> EarthElements({"Fe","O","Si","Mg","Ni","Ca","Al"}); 
@@ -101,6 +110,7 @@ Function2<double> SigmaInelastic(double mass,const std::string &element,
 	
 	
 	double mp = ME.at(element);
+	double Q = QE.at(element);
 	
 	const auto &PM = BodyModel::Instance();
 	if(!PM.isExist(element))
@@ -114,8 +124,8 @@ Function2<double> SigmaInelastic(double mass,const std::string &element,
 	else if(sigma_type == 2)
 		M22 = MET2(mp+mass,mass*mp/(mp+mass)*U0,mass*mp/(mp+mass)*U0);
 	
-	return Function2<double>(Ugrid,Ve_grid,[mp,mass,M22](double u,double ve){
-			return sigmaC(mp,mass,sqrt(u*u+ve*ve),ve,M22,10,40);
+	return Function2<double>(Ugrid,Ve_grid,[Q,mp,mass,M22](double u,double ve){
+			return sigmaC(mp,mass,sqrt(u*u+ve*ve),ve,M22,10,40)*Q*Q;
 		});
 	
 	

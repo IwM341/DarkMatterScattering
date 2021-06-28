@@ -137,6 +137,12 @@ int main(int argc,char**argv){
 	PVAR(isTemp);
 	PVAR(sigma_U);
 	
+	if(!isElastic){
+		Mmax = Mres;
+		Mres = (Mmax+Mmin)/2;
+		
+	}
+	
 	std::vector<double> mgrid = Mgrid(Mmin,Mmax,Mres,N,q,true);
 	std::vector<double> CoeffGrid(mgrid.size());
 	std::vector<double> VescGrid = grid(20,EM.VeMin(),EM.VeMax(),1,0.0);
