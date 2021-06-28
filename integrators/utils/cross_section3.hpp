@@ -4,11 +4,15 @@
 #include <cstdio>
 #include <iostream>
 #include <cmath>
+#include <functional>
+#include <cstdlib>
+
+#include <ctime>
+
 #include "integrator.hpp" 
 #include "omp.h" 
 #include "phase4.hpp"
-#include <functional>
-#include "cstdlib"
+
 
 #define  phase_2pi1   6.2831853071795864770
 #define  phase_2pi2   39.478417604357434476
@@ -66,6 +70,24 @@ typedef std::function<double(const PhaseState2 &out,const PhaseState2 &in)> Matr
 
 typedef std::function<double(double k1,double cosTh)> dsigma_dk1_dcosTh_type;
 typedef std::function<double(double k1,double cosTh)> dsigma_d3k1_type;
+
+
+extern inline double W(double x){
+	const double y = x*x;
+	if(y < 1./128){
+		return 2./3.*y*(1. + 3./5*y*(
+						1. + 5./7*y*(
+						1. + 7./9*y*(
+						1. + 9./11*y*(
+						1. + 11./13*y*(
+						1. + 13./15*y*(
+						1. + 15./17*y)))))));
+	}
+	else
+		return log((1.+x*(2.+x))/(1.-y))/x-2.;
+}
+
+
 
 extern inline dsigma_dk1_dcosTh_type dsigma_dk1_dcosTh(double mk,double mp,double k0,MatrixElementType23 M2,
 								double Nphi ,double  NTh1){ 
@@ -191,6 +213,26 @@ extern inline dsigma_d3k1_type dsigma_d3k1(double mk,double mp,double k0,MatrixE
 			},0,M_PI,NTh1);
 		};
 	
+}
+
+extern inline dsigma_d3k1_type dsigma_d3k1_NR(double mk,double mp,double k0,MatrixElementType22 M2){
+	double alpha = (1.0/137.036);
+	double Ek0 = E(mk,k0);
+	double Ep0 = E(mp,k0);
+	double Ecm = Ek0+Ep0;
+	PhaseState2 St2(vec4(Ek0,0,0,k0),vec4(Ep0,0,0,-k0));
+	//std::cout << "STO[ " << St2<<"]" << std::endl;
+	return [mk,mp,k0,Ep0,Ek0,Ecm,alpha,St2,M2](double k1,double cosTh){
+		double deltaE = (k0-k1)*(k0+k1)/(Ek0+E(mk,k1));
+		double Wx = 0.66666666666666666666*(k1*k1+k0*k0-2*k0*k1*cosTh)/(mp*mp);
+		double sinTh = sqrt(1.0-cosTh*cosTh);
+		PhaseState2 StO(vec4(E(mk,k1),k1*sinTh,0,k1*cosTh),vec4(E(mp,k1),-k1*sinTh,0,-k1*cosTh));
+		
+		//std::cout << "STO[ " << St2<<"]" << std::endl;
+		//std::cout << "M2(StO,St2) = " << M2(St2,StO)<< std::endl;
+		
+		return M2(StO,St2)*alpha*Wx/(8*k0*Ecm*Ecm*phase_2pi3  *  mk*deltaE);
+	};
 }
 
 #define MIN(a,b) ( (a) < (b) ? (a) : (b) )
@@ -366,6 +408,7 @@ extern inline dsigma_d3k1_type dsigma_d3k1_Q(double mk,double mp,double k0,doubl
 }
 
 extern inline double sigmaS(dsigma_dk1_dcosTh_type dsigma,double k,double k_esc,double k_tr,int Nk,int Nth){
+	
 	if(k_tr+k_esc > k){
 		std::cout << "hard kinematics, use another function "<< std::endl;
 		return 0;
@@ -415,20 +458,7 @@ extern inline double sigmaC(dsigma_dk1_dcosTh_type dsigma,dsigma_dk1_dcosTh_type
 		0,0.999*k,0.001*k,Nk);
 }
 
-extern inline double W(double x){
-	const double y = x*x;
-	if(y < 1./128){
-		return 2./3.*y*(1. + 3./5*y*(
-						1. + 5./7*y*(
-						1. + 7./9*y*(
-						1. + 9./11*y*(
-						1. + 11./13*y*(
-						1. + 13./15*y*(
-						1. + 15./17*y)))))));
-	}
-	else
-		return log((1.+x*(2.+x))/(1.-y))/x-2.;
-}
+
 
 
 
@@ -611,6 +641,45 @@ extern inline double sigmaC(double mp,double mk,double v_ls,double v_esc,MatrixE
 	}
 }
 
+extern inline double sigmaC(double mp,double mk,double v_ls,double v_esc,MatrixElementType22 M22,
+							int NTh = 20,int Nk = 40){
+							
+	double k0 = v_ls*mp*mk/(mp+mk);
+	double kt = v_ls*mk*mk/(mp+mk);
+	double ke = v_esc*mk;
+	
+	double Ep = E(mp,k0);
+	double Ek = E(mk,k0);
+
+		
+	double Ecm = Ep + Ek;
+							
+	
+	if(kt*(1+1e-8) >= ke + k0)
+		return 0;
+	if(kt+ke <= k0){
+		auto dsigmaN = dsigma_d3k1_NR(mk,mp,k0,M22);
+		return integrateAB5([kt,dsigmaN,NTh](double ke_s){
+				return integrateAB5([ke_s,kt,dsigmaN](double ThetaVe){
+						double kx = ke_s*sin(ThetaVe);
+						double kz = - kt + ke_s*cos(ThetaVe);
+						
+						double k1 = sqrt(kx*kx+kz*kz);
+						double cosTh = 0;
+						if(kz > 0)
+							cosTh = 1./sqrt(1.+(kx*kx)/(kz*kz));
+						else
+							cosTh = -1./sqrt(1.+(kx*kx)/(kz*kz));
+							
+						return dsigmaN(k1,cosTh)*sin(ThetaVe)*2*M_PI*ke_s*ke_s;
+					},0,M_PI,NTh);
+			},0,ke,Nk);
+	}
+	else{
+		return 0;
+	}
+}
+
 const double MX = RAND_MAX; 
 const double FcE = 1e-10;
 const double Fc = (1.0 - FcE);
@@ -665,7 +734,8 @@ double sigmaTfacor(double mp,double mk,double v,double vesc,double u0,double wT,
 	
 	double wTmin = (mp+mk)/(2*mp)*(std::abs((mp-mk)/(mp+mk))*v - vesc);
 	
-	
+	if(esc == ESCAPE)
+		wTmin = (mp+mk)/(2*mp)*(vesc-v);
 	
 	if(wTmin <0)
 		wTmin = 0;
@@ -700,6 +770,10 @@ double sigmaTfacor(double mp,double mk,double v,double vesc,double u0,double wT,
 			double vt = Vt.norm();
 			double vc = Vc.norm();
 			
+			double coeff = (V-W).norm()/v;
+			if(v == 0)
+				coeff = 1;
+			
 			if(vc != 0){
 				if(vesc+vt <= vc){
 					if(esc == ESCAPE){
@@ -723,10 +797,10 @@ double sigmaTfacor(double mp,double mk,double v,double vesc,double u0,double wT,
 					
 					if(-1.0 <= cosTh_1 &&cosTh_1 <= 1.0){
 						if(esc == CAPTURE){
-							sumt += weight_xi(r,rmin)*sigma_facotor_capture(vc,u0,cosTh_0,cosTh_1,type);
+							sumt += coeff*weight_xi(r,rmin)*sigma_facotor_capture(vc,u0,cosTh_0,cosTh_1,type);
 						}
 						else{
-							sumt += weight_xi(r,rmin)*sigma_facotor_esc(vc,u0,cosTh_0,cosTh_1,type);
+							sumt += coeff*weight_xi(r,rmin)*sigma_facotor_esc(vc,u0,cosTh_0,cosTh_1,type);
 						}
 					}
 				}

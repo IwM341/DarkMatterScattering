@@ -1,1 +1,1 @@
-D:\Soft\Prog\Qt\Tools\mingw810_64\bin\g++ test.cpp -I../ -Wl,-Bstatic -lgomp -static -static-libgcc -o out.exe
+D:\Soft\Prog\Qt\Tools\mingw810_64\bin\g++ test.cpp -I../ -static -static-libgcc -o out.exe

@@ -3,39 +3,16 @@
 #include "integrator.hpp"
 #include "phase4.hpp"
 #include "cross_section3.hpp"
-
+#include "matrix_element.hpp"
+#include <utility> 
 #include <fstream>
 #include <string>
-
+#include <iomanip>
 #include <time.h>
 
 #define a1 1
 #define b1 0
-#define a2 1
-#define b2 0
 
-double delta(double x,double sigma){
-	return exp(-x*x/(2*sigma*sigma))/sqrt(2*M_PI*sigma*sigma);
-}
-double M2phi(PhaseState3 out, PhaseState2 in){
-	
-	const double e2 = (4*M_PI/137.036);
-	double p1q = out.P1*out.Q;
-	double pq = in.P0*out.Q;
-	
-	
-	double M2hi = 4*((a2*a2+b2*b2)*out.K1*in.K0 + (a2*a2-b2*b2)*in.K0.quad());
-	double M2ee = ((a1*a1+b1*b1)*out.P1*in.P0 + (a1*a1-b1*b1)*in.P0.quad());
-	
-	double dM2ee = (a1*a1+b1*b1)*(in.P0-out.P1)*out.Q;
-	
-
-	double qcoeff = -(out.P1/p1q - in.P0/pq).quad();
-	
-	double part3 =  (a1*a1+b1*b1)*(pq-p1q)*(1/p1q-1/pq);
-	
-	return M2hi*(qcoeff*(M2ee+dM2ee)+part3)*e2;
-}
 
 template <typename Functor2>
 void save_function2(Functor2 F,double x0,double x1,double y0,double y1,int Nx,int Ny,
@@ -46,7 +23,7 @@ void save_function2(Functor2 F,double x0,double x1,double y0,double y1,int Nx,in
 	double dy = (y1-y0)/(Ny-1);
 	
 	std::ofstream out(filename.c_str(),std::ofstream::out);
-	
+	//out <<std::setprecision(17);
 	out << ytitle+"\\"+xtitle;
 	for(int j =0;j<Nx;j++){
 		out << '\t' << x0 + j*dx;
@@ -65,19 +42,22 @@ const double pbarn_to_GeV = 2.56818998849288e-09;
 const double GeV_to_pbarn = 1/2.56818998849288e-09;
 
 int main(void){
-	double mk = 0.1;
+	double mk = 0.5;
 	double mp = 1;
-	double k0 = 0.1;
-	MatrixElementType23 M2 = M2phi;//[](PhaseState3,PhaseState2){return 1;};
+	double k0 = 0.001;
+	double Ep = E(mp,k0);
+	double Ek = E(mk,k0);
 	
-	const double delta = 0.05;
+	MatrixElementType23 M23 = MET1Q(Ep+Ek,k0);//[](PhaseState3,PhaseState2){return 1;};
+	MatrixElementType22 M22 = MET1(Ep+Ek,k0);
 	
-	const double eps = delta*(E(mp,k0)+E(mk,k0))*(E(mk,k0)-mk)/(E(mk,k0)+E(mp,k0)-mk);
 	
 	
-	auto F1 = dsigma_dk1_dcosTh(mk,mp,k0/*,eps*/,M2,20,20);
+	auto F1 = dsigma_d3k1(mk,mp,k0,M23,40,40);
+	auto F2 = dsigma_d3k1_NR(mk,mp,k0,M22);
 	
-	save_function2(F1,0,k0,-1,1,1000,20,"mp1mk01.dat","k'","cos(theta)");
+	save_function2(F1,0,k0,-1,1,20,20,"ordinary.dat","k'","cos(theta)");
+	save_function2(F2,0,k0,-1,1,20,20,"simplify.dat","k'","cos(theta)");
 	
 	/*
 	double cosTh = 0.5;

@@ -106,16 +106,16 @@ Function2<double> SigmaInelastic(double mass,const std::string &element,
 	if(!PM.isExist(element))
 		return Function2<double>();
 
-	MatrixElementType23 M23 = MET0Q(mp+mass);
+	MatrixElementType22 M22 = MET0(mp+mass);
 	if(sigma_type == 1)
-		M23 = MET1Q(mp+mass,mass*mp/(mp+mass)*U0);
+		M22 = MET1(mp+mass,mass*mp/(mp+mass)*U0);
 	else if(sigma_type == -1)
-		M23 = MET1Q(mp+mass,mass*mp/(mp+mass)*U0,1);
+		M22 = MET1(mp+mass,mass*mp/(mp+mass)*U0,1);
 	else if(sigma_type == 2)
-		M23 = MET2Q(mp+mass,mass*mp/(mp+mass)*U0,mass*mp/(mp+mass)*U0);
+		M22 = MET2(mp+mass,mass*mp/(mp+mass)*U0,mass*mp/(mp+mass)*U0);
 	
-	return Function2<double>(Ugrid,Ve_grid,[mp,mass,M23](double u,double ve){
-			return sigmaC(mp,mass,sqrt(u*u+ve*ve),ve,M23,2,2,4,40);
+	return Function2<double>(Ugrid,Ve_grid,[mp,mass,M22](double u,double ve){
+			return sigmaC(mp,mass,sqrt(u*u+ve*ve),ve,M22,10,40);
 		});
 	
 	

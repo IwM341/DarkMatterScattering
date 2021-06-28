@@ -1,1 +1,2 @@
-D:\Soft\Prog\Qt\Tools\mingw810_64\bin\g++ *.cpp -I../../utils/ -fopenmp -static -static-libgcc -o out.exe
+D:\Soft\Prog\Qt\Tools\mingw810_64\bin\g++ calc_element.cpp -I../utils/ -fopenmp -static -static-libgcc -o calc_element.exe
+C:\Soft\Qt\Tools\mingw810_64\bin\g++ calc_element.cpp -I../utils/ -fopenmp -static -static-libgcc -o calc_element.exe

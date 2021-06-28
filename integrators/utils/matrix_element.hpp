@@ -36,12 +36,13 @@ MatrixElementType23 MET0Q(double Ecm,double sigma0 = 1){
 MatrixElementType22 MET1(double Ecm,double p0,int type =0,double sigma0 = 1 ){
 	double mult = sigma0*Ecm*Ecm*4*M_PI/(p0*p0);
 	if(type == 0){
-		return [mult](const PhaseState2 &out, PhaseState2 in){
+		return [mult](const PhaseState2 &out,const PhaseState2 &in){
+			//std::cout << "State["<< out << ", " << in << "]\n" <<std::endl; 
 			return -mult*(out.P-in.P).quad();
 		};
 	}
 	else{
-		return [mult](const PhaseState2 &out, PhaseState2 in){
+		return [mult](const PhaseState2 &out,const PhaseState2 &in){
 			return -mult*(out.K-in.K).quad();
 		};
 	}
