@@ -3,13 +3,13 @@
 #include <cstdlib>
 #include <time.h>
 #include <fstream>
-#include "utils.hpp"
+#include "utils_S.hpp"
 
-const std::map<std::string,std::string> Filenames({{"H1","H1(el, 0).dat"},
-											{"He4","He4(el, 0).dat"},
-											{"O16","O16(el, 0).dat"}});
+const std::map<std::string,std::string> Filenames({{"H1","H1(2).dat"},
+											{"He4","He4(2).dat"},
+											{"O16","O16(2).dat"}});
 
-const std::string result = "Solar(0).dat";
+const std::string result = "Solar(2).dat";
 
 int main(){
 
@@ -20,7 +20,7 @@ int main(){
 	
 	for(auto el: Filenames ){
 		auto F = Function::LoadFunction1(el.second.c_str());
-		std::cout << "element = " <<el << ": " << F.getXgrid().size();
+		std::cout << "element = " <<el.first << ": " << F.getXgrid().size();
 		
 		double N = ME.at(el.first);
 		P  = P + apply_function<double,double>(Mgrid,[N,&F](double mk){
