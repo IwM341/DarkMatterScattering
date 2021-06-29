@@ -133,7 +133,7 @@ Function2<double> SigmaInelastic(double mass,const std::string &element,
 
 #define KGeV 8.617333262e-14
 Function2<double> SigmaElastic(double mass,const std::string &element,
-	const std::vector<double> Ugrid,const std::vector<double> Ve_grid,
+	const std::vector<double> &Ugrid,const std::vector<double> &Ve_grid,
 	int considerTemp = 0,
 	int sigma_type = 0,size_t Nmk = 10000){
 	
@@ -150,7 +150,7 @@ Function2<double> SigmaElastic(double mass,const std::string &element,
 		PM["Temp"],[mp,considerTemp](double T){return considerTemp*sqrt(KGeV*T/mp);}));
 	//std::cout << WT <<std::endl;
 	
-	return Function2<double>(Ugrid,Ve_grid,[&WT,mp,mass,sigma_type,considerTemp,Nmk](double u,double ve){
+	return Function2<double>(Ugrid,Ve_grid,[WT,mp,mass,sigma_type,considerTemp,Nmk](double u,double ve){
 			return sigmaTfacor(mp,mass,sqrt(u*u+ve*ve),ve,mp/(mp+mass)*U0,WT(ve),CAPTURE,sigma_type,Nmk);
 		});
 }

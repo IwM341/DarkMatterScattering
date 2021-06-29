@@ -750,6 +750,8 @@ double sigmaTfacor(double mp,double mk,double v,double vesc,double u0,double wT,
 		return 0.0;
 	
 	double sum = 0.0;
+	
+	
 	vec3 V(0,0,v);
 	#pragma omp parallel reduction(+:sum)
 	{
@@ -759,6 +761,7 @@ double sigmaTfacor(double mp,double mk,double v,double vesc,double u0,double wT,
 		
 		//std::cout << threadnum << std::endl;
 		std::srand(int(time(NULL)) * (omp_get_thread_num()+1));
+		
 		//#pragma omp parallel for reduction(+:sum)
 		for(size_t i=0;i<Nt;i++){
 			double cosR = random_cos();
@@ -771,36 +774,40 @@ double sigmaTfacor(double mp,double mk,double v,double vesc,double u0,double wT,
 			double vc = Vc.norm();
 			
 			double coeff = (V-W).norm()/v;
+			
 			if(v == 0)
 				coeff = 1;
 			
+			if(wT != 0){
+				coeff*= weight_xi(r,rmin);
+			}
 			if(vc != 0){
 				if(vesc+vt <= vc){
 					if(esc == ESCAPE){
-						sumt += weight_xi(r,rmin)*pow(vc/u0,type*2);
+						sumt += coeff*pow(vc/u0,type*2);
 						//std::cout << "easy ESCAPE" <<std::endl;
 					}
 				}
 				else if(vc+vt<=vesc){
 					if(esc == CAPTURE)
-						sumt += weight_xi(r,rmin)*pow(vc/u0,type*2);
+						sumt += coeff*pow(vc/u0,type*2);
 						//std::cout << "easy CAPTURE" <<std::endl;
 				}
 				else if(vesc+vc <= vt){
 					if(esc == ESCAPE)
-						sumt += weight_xi(r,rmin)*pow(vc/u0,type*2);
+						sumt += coeff*pow(vc/u0,type*2);
 				}
 				else if(vt >= 0){
 				
 					double cosTh_0 = -(Vt*Vc)/(vt*vc);
 					double cosTh_1 = (vt*vt+vc*vc-vesc*vesc)/(2*vc*vt);
 					
-					if(-1.0 <= cosTh_1 &&cosTh_1 <= 1.0){
+					if(-1.0 <= cosTh_1 && cosTh_1 <= 1.0){
 						if(esc == CAPTURE){
-							sumt += coeff*weight_xi(r,rmin)*sigma_facotor_capture(vc,u0,cosTh_0,cosTh_1,type);
+							sumt += coeff*sigma_facotor_capture(vc,u0,cosTh_0,cosTh_1,type);
 						}
 						else{
-							sumt += coeff*weight_xi(r,rmin)*sigma_facotor_esc(vc,u0,cosTh_0,cosTh_1,type);
+							sumt += coeff*sigma_facotor_esc(vc,u0,cosTh_0,cosTh_1,type);
 						}
 					}
 				}
@@ -813,7 +820,7 @@ double sigmaTfacor(double mp,double mk,double v,double vesc,double u0,double wT,
 			}*/
 		}
 		sum += sumt/(Nt*threadnum);
-	}
+ 	}
 	return sum;
 }
 

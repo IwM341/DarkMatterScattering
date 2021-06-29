@@ -8,6 +8,11 @@
 #define SVAR(x) (std::string(#x) + std::string(" = ") + std::to_string(x))
 #define PVAR(x) std::cout << std::string(#x) + std::string(" = ") + std::to_string(x) <<std::endl;
 
+namespace std{
+	string to_string(const string & S){
+		return S;
+	}
+}
 
 std::vector<double> Mgrid(double Mmin,double Mmax,double Mres,size_t N,double q = 1,bool eq = true){
 	std::vector<double> M(N);
@@ -65,6 +70,113 @@ bool In(const T1 &x,const T2 &X){
 	return false;
 }
 
+
+Function1<double> MassElement(std::string el,bool isElastic,int sigma_type,
+					double Mmin,double Mmax,size_t N ,double q,double sigma_U,int isTemp,
+					const std::string&path = ""){
+	auto &EM = BodyModel::Instance();
+	double Mres = ME.at(el);
+	
+	if(!isElastic){
+		Mmax = Mres;
+		Mres = (Mmax+Mmin)/2;
+		
+	}
+	
+	int Nmk = 1;
+	if(isTemp){
+		Nmk = 100000;
+	}
+	
+	std::vector<double> mgrid = Mgrid(Mmin,Mmax,Mres,N,q,true);
+	
+	if(mgrid[mgrid.size()-1] < Mmax-0.001){
+		mgrid.push_back(Mmax);
+	}
+	
+	std::vector<double> CoeffGrid(mgrid.size());
+	std::vector<double> VescGrid = grid(20,EM.VeMin(),EM.VeMax(),1,0.0);
+	std::vector<double> Ugrid;
+	if(isElastic)
+		Ugrid = grid(300,EM.VeMin(),6*U0,4,0.001);
+	else
+		Ugrid = grid(100,U0/10,U0*6,1,0.0);
+	
+	//std::cout << mgrid <<std::endl;
+	Function2<double> Sgm;
+	for(size_t i=0;i<mgrid.size();i++){
+		//std::cout << mgrid[i] <<std::endl;
+		if(isElastic)
+			Sgm = SigmaElastic(mgrid[i],el,Ugrid,VescGrid,isTemp,sigma_type,Nmk);
+		else
+			Sgm = SigmaInelastic(mgrid[i],el,Ugrid,VescGrid,sigma_type);
+		Function1<double> Su = IntegrateSigma(Sgm,el);
+		
+		CoeffGrid[i] = C_ND(Su,sigma_U*U0);
+	}
+	
+	
+		
+	return Function1<double>(mgrid,CoeffGrid);
+	/*
+	std::ofstream outf(path + el + "(" + Elasticness[isElastic] + ", " + 
+								TempConsider[isTemp] + std::to_string(sigma_type) + ").dat");
+	outf << "Mw\tCnd" << std::endl;
+	outf << Function1<double>(mgrid,CoeffGrid) << std::endl;
+	*/
+}
+
+
+
+std::string Filename(std::string el,bool isElastic,int sigma_type,
+					double Mmin,double Mmax,size_t N ,double q,double sigma_U,int isTemp,
+					const std::string&path = ""){
+	
+	std::string Elasticness[2]  = {"in","el"};
+	std::string TempConsider[2]  = {"","T, "};				
+	return path + el + "(" + Elasticness[isElastic] + ", " + 
+								TempConsider[isTemp] + std::to_string(sigma_type) + ").dat";
+}
+
+Function1<double> Divide(Function1<double> IN,Function1<double> EL){
+	Function1<double> DIV = IN;
+	DIV.insert(EL);
+	DIV = Function1<double>(DIV.getXgrid(),[&IN,&EL](double mass){return IN(mass)/EL(mass);});
+	return DIV;
+}
+
+int main(void){
+	const std::vector<std::string> Els({"Fe","Ni","Mg","Si","O"});
+	
+	for(int sigmaType =0;sigmaType<3;sigmaType++){
+		for(auto el : Els){
+			std::cout << SVAR(el) << "\t" <<SVAR(sigmaType) << std::endl;
+			
+			auto EL = MassElement(el,1,sigmaType,2,100,100 ,1.6,1,0,std::string("result\\elastic\\") + std::to_string(sigmaType) +"\\");
+			auto IN = MassElement(el,0,sigmaType,2,100,40 ,1,1,0);
+			
+			std::ofstream outEL(Filename(el,1,sigmaType,2,100,100 ,1.6,1,0, 
+										std::string("result\\elastic\\") + std::to_string(sigmaType) +"\\" ));
+			outEL << "Mw\tCnd" << std::endl;
+			outEL << EL << std::endl;
+			
+			std::ofstream outIN(Filename(el,0,sigmaType,2,100,100 ,1.6,1,0, 
+											std::string("result\\inelastic\\") + std::to_string(sigmaType) +"\\" ));
+			outIN << "Mw\tCnd" << std::endl;
+			outIN << IN << std::endl;
+			
+			auto DV = Divide(IN,EL);
+			
+			std::ofstream outDV(std::string("result\\divison\\") + std::to_string(sigmaType) +"\\" + 
+									el + "(" + std::to_string(sigmaType) + ").dat");
+			outDV << "Mw\tDiv" << std::endl;
+			outDV << DV << std::endl;
+			
+			
+		}
+	}
+}
+/*
 int main(int argc,char**argv){
 	if(argc < 2){
 		std::cout << "expect: [element name] [(isElastic)] [(sigma_type)] [(Mmin)] [(Mmax)] [(N)] [(q)] [(sigma_U)] [(Temp)]" << std::endl;
@@ -137,41 +249,15 @@ int main(int argc,char**argv){
 	PVAR(isTemp);
 	PVAR(sigma_U);
 	
-	if(!isElastic){
-		Mmax = Mres;
-		Mres = (Mmax+Mmin)/2;
-		
-	}
+	auto F2 = MassElement(el,isElastic,sigma_type, Mmin, Mmax, N , q, sigma_U, isTemp );
 	
-	std::vector<double> mgrid = Mgrid(Mmin,Mmax,Mres,N,q,true);
-	std::vector<double> CoeffGrid(mgrid.size());
-	std::vector<double> VescGrid = grid(20,EM.VeMin(),EM.VeMax(),1,0.0);
-	std::vector<double> Ugrid;
-	if(isElastic)
-		Ugrid = grid(64,0.0,2*U0,6,0.01);
-	else
-		Ugrid = grid(64,U0/10,U0*3,1,0.0);
-	
-	//std::cout << mgrid <<std::endl;
-	Function2<double> Sgm;
-	for(size_t i=0;i<mgrid.size();i++){
-		std::cout << mgrid[i] <<std::endl;
-		if(isElastic)
-			Sgm = SigmaElastic(mgrid[i],el,Ugrid,VescGrid,isTemp,sigma_type,10000);
-		else
-			Sgm = SigmaInelastic(mgrid[i],el,Ugrid,VescGrid,sigma_type);
-		Function1<double> Su = IntegrateSigma(Sgm,el);
-		CoeffGrid[i] = C_ND(Su,sigma_U*U0);
-	}
-	
-	std::string Elasticness[2]  = {"in","el"};
-	std::string TempConsider[2]  = {"","T, "};
-	
-	std::ofstream outf(el + "(" + Elasticness[isElastic] + ", " + 
-								TempConsider[isTemp] + std::to_string(sigma_type) + ").dat");
+	std::ofstream outf(Filename((el,isElastic,sigma_type, Mmin, Mmax, N , q, sigma_U, isTemp ));
 	outf << "Mw\tCnd" << std::endl;
-	outf << Function1<double>(mgrid,CoeffGrid) << std::endl;
+	outf << F2 << std::endl;
+	
+	
 	
 	
 	return 0;
 }
+*/

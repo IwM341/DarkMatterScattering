@@ -223,7 +223,7 @@ public:
 		sort();
 	}
 	void insert(Function1<T> F){
-		push_back(F.x,F.Y);
+		push_back(F.X,F.Y);
 	}
 	T UniformF(double x){
 		size_t i = (x-X[0])/(X[1]-X[0]);
