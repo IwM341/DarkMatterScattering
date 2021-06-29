@@ -76,7 +76,7 @@ Function1<double> MassElement(std::string el,bool isElastic,int sigma_type,
 					const std::string&path = ""){
 	auto &EM = BodyModel::Instance();
 	double Mres = ME.at(el);
-	
+	double MmaxO = Mmax;
 	if(!isElastic){
 		Mmax = Mres;
 		Mres = (Mmax+Mmin)/2;
@@ -90,15 +90,15 @@ Function1<double> MassElement(std::string el,bool isElastic,int sigma_type,
 	
 	std::vector<double> mgrid = Mgrid(Mmin,Mmax,Mres,N,q,true);
 	
-	if(mgrid[mgrid.size()-1] < Mmax-0.001){
-		mgrid.push_back(Mmax);
+	if(mgrid[mgrid.size()-1] < MmaxO-0.001){
+		mgrid.push_back(MmaxO);
 	}
 	
 	std::vector<double> CoeffGrid(mgrid.size());
 	std::vector<double> VescGrid = grid(20,EM.VeMin(),EM.VeMax(),1,0.0);
 	std::vector<double> Ugrid;
 	if(isElastic)
-		Ugrid = grid(300,EM.VeMin(),6*U0,4,0.001);
+		Ugrid = grid(300,EM.VeMin()/100,6*U0,4,0.001);
 	else
 		Ugrid = grid(100,U0/10,U0*6,1,0.0);
 	
