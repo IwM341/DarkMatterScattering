@@ -50,7 +50,7 @@ MatrixElementType22 MET1(double Ecm,double p0,int type =0,double sigma0 = 1 ){
 }
 
 MatrixElementType23 MET1Q(double Ecm,double p0,int type =0 ,double sigma0 = 1){
-	double mult = sigma0*Ecm*Ecm*4*M_PI/(p0*p0);
+	double mult = sigma0*Ecm*Ecm*8*M_PI/(p0*p0);
 	if(type == 0){
 		return [mult](const PhaseState3 &out, PhaseState2 in){
 			return -mult*(out.P-in.P).quad()*q_coeff(in.P,out.P,out.Q)*e2;
@@ -63,7 +63,7 @@ MatrixElementType23 MET1Q(double Ecm,double p0,int type =0 ,double sigma0 = 1){
 	}
 }
 MatrixElementType22 MET2(double Ecm,double p0,double k0,double sigma0 = 1){
-	double mult = sigma0*Ecm*Ecm*3*M_PI/(2*p0*p0*k0*k0);
+	double mult = sigma0*Ecm*Ecm*3*M_PI/(p0*p0*k0*k0);
 	return [mult](const PhaseState2 &out, PhaseState2 in){
 		return mult*(out.P-in.P).quad()*(out.K-in.K).quad();
 	};
