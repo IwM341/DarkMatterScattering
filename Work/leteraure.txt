@@ -1,3 +1,31 @@
-[ППВ] - М.Пескин, Д.Шредер. Введение в квантовую теорию поля.
-[РУБ] - Д.С. Горбунов, В.А. Рубаков Введение в теорию ранней вселенной. Теория горячего Большого взрыва.
-[ВНГ] - С.Вайнберг. Квантовая теория поля. (580с)
+1 [ППВ] - М.Пескин, Д.Шредер. Введение в квантовую теорию поля.
+
+2 [РУБ] - Д.С.Горбунов, В.А.Рубаков Введение в теорию ранней вселенной. Теория горячего Большого взрыва.
+
+3 [ВНГ] - С.Вайнберг. Квантовая теория поля. (580с)
+
+4 [ПЧТМ] - В.А.Рябов, В.А.Царев, А.М. Цховребов. Поиски частиц темной материи.
+
+5 [ОБН] - В.А.Бедняков. Физика элементарных частиц и атомного ядра, № 47, Выпуск 5 за 2016 г 1316c.
+
+6 [ВВТМ] - S.Baum, L.Visinelli, K.Freese, P.Stengel. A tale of dark matter capture, sub-dominant WIMPs, and neutrino observatories. Phys. Rev. D 95, 043007 (2017)
+
+7 [ЭИЗА] - G.Busoni,1 A.De Simone, P.Scott, A.C.Vincent. Evaporation and scattering of momentum- and velocity-dependent dark matter in the Sun. JCAP10(2017)037
+
+8 [QDM] - C.Kouvaris, J.Pradler. Probing sub-GeV Dark Matter with conventional detectors. Phys. Rev. Lett. 118, 031803 (2017)
+
+9 [PDG] - P.A. Zyla et al. (Particle Data Group), Prog. Theor. Exp. Phys. 2020, 083C01 (2020)
+
+10 [EPS] - M.Ram. Inner Brernsstrahlung in Low-Energy Electron-Neutrino
+(Antineutrino) Scattering. PHYSICAL REVIEW VOLUME 155, NUM 8 ER 5 25 MARCH 1967
+
+11 [V(x)] - R.Catena. WIMP capture and annihilation in the Earth in effective theories. arXiv:1609.08967.
+
+12 [F(u)] - A.Gould. Resonant Enhancements In WIMP Capture By The Earth. Astrophys. J. 321, 571 (1987).
+
+13 [ЗR(x)] - A.M. Dziewonski, D.L.Anderson. Preliminary reference Earth model. Physics of the Earth and Planetary Interiors, 25 (1981) 297— 356
+
+14 [ЗREl] - H.D.Holland, K.K.Turekian, Compositional Model for the Earth's Core. Treatise on Geochemistry,
+Pergamon (2003) 547-568.
+
+15 [SUN] - 1611.09867
