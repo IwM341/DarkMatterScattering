@@ -28,4 +28,4 @@
 
 15 [13] - N.Vinyoles et al. A New Generation of Standard Solar Models. The American Astronomical Society (2017).
 
-16 [16] - 
+16 [16] - N.F. Bell et al. The Migdal Effect and Photon Bremsstrahlung in effective field theories of dark matter direct detection and coherent elastic neutrino-nucleus scattering. Phys. Rev. D 101, 015012 (2020)
