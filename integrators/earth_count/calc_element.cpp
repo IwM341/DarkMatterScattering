@@ -147,31 +147,32 @@ Function1<double> Divide(Function1<double> IN,Function1<double> EL){
 
 int main(void){
 	const std::vector<std::string> Els({"Fe","Ni","Mg","Si","O"});
-	
+	const double sigmaU = 1.174;
 	for(int sigmaType =0;sigmaType<3;sigmaType++){
 		for(auto el : Els){
 			std::cout << SVAR(el) << "\t" <<SVAR(sigmaType) << std::endl;
 			
-			auto EL = MassElement(el,1,sigmaType,2,100,100 ,1.6,1,0,std::string("result\\elastic\\") + std::to_string(sigmaType) +"\\");
+			auto EL = MassElement(el,1,sigmaType,2,100,100 ,1.6,sigmaU,0,std::string("result\\elastic\\") + std::to_string(sigmaType) +"\\");
 			auto IN = MassElement(el,0,sigmaType,2,100,40 ,1,1,0);
 			
-			std::ofstream outEL(Filename(el,1,sigmaType,2,100,100 ,1.6,1,0, 
+			std::ofstream outEL(Filename(el,1,sigmaType,2,100,100 ,1.6,sigmaU,0, 
 										std::string("result\\elastic\\") + std::to_string(sigmaType) +"\\" ));
 			outEL << "Mw\tCnd" << std::endl;
 			outEL << EL << std::endl;
 			
-			std::ofstream outIN(Filename(el,0,sigmaType,2,100,100 ,1.6,1,0, 
+			std::ofstream outIN(Filename(el,0,sigmaType,2,100,100 ,1.6,sigmaU,0, 
 											std::string("result\\inelastic\\") + std::to_string(sigmaType) +"\\" ));
 			outIN << "Mw\tCnd" << std::endl;
 			outIN << IN << std::endl;
 			
+			/*
 			auto DV = Divide(IN,EL);
 			
 			std::ofstream outDV(std::string("result\\divison\\") + std::to_string(sigmaType) +"\\" + 
 									el + "(" + std::to_string(sigmaType) + ").dat");
 			outDV << "Mw\tDiv" << std::endl;
 			outDV << DV << std::endl;
-			
+			*/
 			
 		}
 	}

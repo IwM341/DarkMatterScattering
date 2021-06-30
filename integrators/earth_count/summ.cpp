@@ -5,13 +5,16 @@
 #include <fstream>
 #include "utils.hpp"
 
-const std::map<std::string,std::string> Filenames({{"Fe","Fe(in, 2).dat"},
-											{"Ni","Ni(in, 2).dat"},
-											{"Mg","Mg(in, 2).dat"},
-											{"Si","Si(in, 2).dat"},
-											{"O","O(in, 2).dat"}});
+#define Tp "el"
+#define tp 0
 
-const std::string result = "InelasticP(2).dat";
+const std::map<std::string,std::string> Filenames({{"Fe",std::string("Fe(") + Tp + ", "+ std::to_string(tp) + ").dat"},
+											{"Ni",std::string("Ni(") + Tp + ", "+ std::to_string(tp) + ").dat"},
+											{"Mg",std::string("Mg(") + Tp + ", "+ std::to_string(tp) + ").dat"},
+											{"Si",std::string("Si(") + Tp + ", "+ std::to_string(tp) + ").dat"},
+											{"O",std::string("O(") + Tp + ", "+ std::to_string(tp) + ").dat"}});
+
+const std::string result = std::string(Tp) + "(" + std::to_string(tp)+ ").dat";
 
 int main(){
 
@@ -22,9 +25,10 @@ int main(){
 	
 	for(auto el: Filenames ){
 		auto F = Function::LoadFunction1(el.second.c_str());
+		std::cout << F.getXgrid().size();
 		double N = ME.at(el.first);
 		P  = P + apply_function<double,double>(Mgrid,[N,&F](double mk){
-			return F(mk)*N*(1+mk)/(N+mk)/mk;
+			return F(mk)*N*(1+mk)*(1+mk)/(N+mk)/(N+mk)/mk;
 		});
 	}
 	
