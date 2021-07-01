@@ -5,11 +5,11 @@
 #include <fstream>
 #include "utils_S.hpp"
 
-const std::map<std::string,std::string> Filenames({{"H1","H1(2).dat"},
-											{"He4","He4(2).dat"},
-											{"O16","O16(2).dat"}});
+const std::map<std::string,std::string> Filenames({{"H1","H1(1).dat"},
+											{"He4","He4(1).dat"},
+											{"O16","O16(1).dat"}});
 
-const std::string result = "Solar(2).dat";
+const std::string result = "Solar(1).dat";
 
 int main(){
 
@@ -24,7 +24,7 @@ int main(){
 		
 		double N = ME.at(el.first);
 		P  = P + apply_function<double,double>(Mgrid,[N,&F](double mk){
-			return F(mk)*N*(1+mk)/(N+mk)/mk;
+			return F(mk)*N*(1+mk)*(1+mk)/(N+mk)/(N+mk)/mk;
 		});
 	}
 	

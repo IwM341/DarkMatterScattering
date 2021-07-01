@@ -136,9 +136,9 @@ int main(void){
 		for(auto el : Els){
 			std::cout << SVAR(el) << "\t" <<SVAR(sigmaType) << std::endl;
 			
-			auto EL = MassElement(el,sigmaType,2,100,100 ,1.6,1,0);
+			auto EL = MassElement(el,sigmaType,2,100,100 ,1.6,1.174,0);
 			
-			std::ofstream outEL(Filename(el,sigmaType,2,100,100 ,1.6,1,0, 
+			std::ofstream outEL(Filename(el,sigmaType,2,100,100 ,1.6,1.174,0, 
 										std::string("result\\") + std::to_string(sigmaType) +"\\" ));
 			outEL << "Mw\tCnd" << std::endl;
 			outEL << EL << std::endl;			

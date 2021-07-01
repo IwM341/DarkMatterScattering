@@ -5,8 +5,8 @@
 #include <fstream>
 #include "utils.hpp"
 
-#define Tp "el"
-#define tp 0
+#define Tp "in"
+#define tp 2
 
 const std::map<std::string,std::string> Filenames({{"Fe",std::string("Fe(") + Tp + ", "+ std::to_string(tp) + ").dat"},
 											{"Ni",std::string("Ni(") + Tp + ", "+ std::to_string(tp) + ").dat"},
@@ -25,6 +25,7 @@ int main(){
 	
 	for(auto el: Filenames ){
 		auto F = Function::LoadFunction1(el.second.c_str());
+		std::cout <<el.first<<std::endl;
 		std::cout << F.getXgrid().size();
 		double N = ME.at(el.first);
 		P  = P + apply_function<double,double>(Mgrid,[N,&F](double mk){

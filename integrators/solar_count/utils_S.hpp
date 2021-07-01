@@ -118,11 +118,11 @@ Function2<double> SigmaInelastic(double mass,const std::string &element,
 
 	MatrixElementType22 M22 = MET0(mp+mass);
 	if(sigma_type == 1)
-		M22 = MET1(mp+mass,mass*mp/(mp+mass)*U0);
+		M22 = MET1(mp+mass,mass*U0);
 	else if(sigma_type == -1)
-		M22 = MET1(mp+mass,mass*mp/(mp+mass)*U0,1);
+		M22 = MET1(mp+mass,mass*U0,1);
 	else if(sigma_type == 2)
-		M22 = MET2(mp+mass,mass*mp/(mp+mass)*U0,mass*mp/(mp+mass)*U0);
+		M22 = MET2(mp+mass,mass*U0,mass*U0);
 	
 	return Function2<double>(Ugrid,Ve_grid,[Q,mp,mass,M22](double u,double ve){
 			return sigmaC(mp,mass,sqrt(u*u+ve*ve),ve,M22,10,40)*Q*Q;
@@ -151,7 +151,7 @@ Function2<double> SigmaElastic(double mass,const std::string &element,
 	//std::cout << WT <<std::endl;
 	
 	return Function2<double>(Ugrid,Ve_grid,[WT,mp,mass,sigma_type,considerTemp,Nmk](double u,double ve){
-			return sigmaTfacor(mp,mass,sqrt(u*u+ve*ve),ve,mp/(mp+mass)*U0,WT(ve),CAPTURE,sigma_type,Nmk);
+			return sigmaTfacor(mp,mass,sqrt(u*u+ve*ve),ve,U0,WT(ve),CAPTURE,sigma_type,Nmk);
 		});
 }
 
