@@ -146,7 +146,7 @@ Function1<double> Divide(Function1<double> IN,Function1<double> EL){
 }
 
 int main(void){
-	const std::vector<std::string> Els({"Fe","Ni","Mg","Si","O","Ca","Al","S","Cr","Na","P","Mn","C","H",});
+	const std::vector<std::string> Els({"Fe","Ni","Mg","Si","O","Ca","Al","S","Cr","Na","P","Mn","C","H","Li"});
 	const double sigmaU = 1.174;
 	for(int sigmaType =0;sigmaType<3;sigmaType++){
 		std::vector<double> Mgrid = grid(1000,2,100,1,0);
