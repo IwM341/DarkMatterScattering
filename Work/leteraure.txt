@@ -8,7 +8,7 @@
 
 6 [4] - S.Baum, L.Visinelli, K.Freese, P.Stengel. A tale of dark matter capture, sub-dominant WIMPs, and neutrino observatories. Phys. Rev. D 95, 043007 (2017)
 
-7 [5] - G.Busoni,1 A.De Simone, P.Scott, A.C.Vincent. Evaporation and scattering of momentum- and velocity-dependent dark matter in the Sun. JCAP10(2017)037
+7 [5] - G.Busoni, A.De Simone, P.Scott, A.C.Vincent. Evaporation and scattering of momentum- and velocity-dependent dark matter in the Sun. JCAP10(2017)037
 
 8 [11] - C.Kouvaris, J.Pradler. Probing sub-GeV Dark Matter with conventional detectors. Phys. Rev. Lett. 118, 031803 (2017)
 
